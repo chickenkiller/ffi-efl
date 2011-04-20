@@ -3,6 +3,9 @@
 #
 path = File.dirname __FILE__
 lib_path = File.join path, '..', 'lib', 'efl'
+
+native_lib_path = `pkg-config --variable=libdir ecore`.strip
+
 #
 # header, module name, lfct prefix, lib
 libraries = [
@@ -253,7 +256,8 @@ end.each do |lib, output, module_name, module_base, enums, typedefs, callbacks, 
     puts "generate #{output}"
     open(output,'w:utf-8') do |f|
         f << HEADER.sub(/MNAME/,module_name).sub(/MBASE/,module_base)
-        f << "#{INDENT}#\n#{INDENT}ffi_lib '#{lib}'"
+	lib = "lib#{lib}.so" unless lib.start_with? 'lib'
+        f << "#{INDENT}#\n#{INDENT}ffi_lib '#{native_lib_path}/#{lib}'"
         f << "\n#{INDENT}#\n#{INDENT}# ENUMS"
         f << "\n"+enums.collect { |t| ( t.is_a?(Array) ? ( TYPES_USAGE[t[0]] ? t[1] : nil ) : t ) }.compact.join("\n") unless enums.empty?
         f << "\n#{INDENT}#\n#{INDENT}# TYPEDEFS"
