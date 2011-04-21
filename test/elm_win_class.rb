@@ -33,8 +33,7 @@ class MyWin < Elm::ElmWin
     end
 end
 #
-win = MyWin.new "App name", "Window Title" do |w|
-    eo = w.evas_object
+win = MyWin.new("App name", "Window Title") do |w, eo| # passed objects are window and evas_object
     eo.move 300, 300
     eo.resize 200, 100
     eo.show
