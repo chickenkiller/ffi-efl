@@ -3,9 +3,6 @@
 #
 path = File.dirname __FILE__
 lib_path = File.join path, '..', 'lib', 'efl'
-
-native_lib_path = `pkg-config --variable=libdir ecore`.strip
-
 #
 # header, module name, lfct prefix, lib
 libraries = [
@@ -13,7 +10,7 @@ libraries = [
     [ 'Eet.h', 'Eet', 'eet', 'eet'],
     [ 'Evas.h', 'Evas', 'evas', 'evas'],
 #    [ 'Evas_GL.h', 'EvasGl', 'evas_gl', 'evas'],
-#    [ 'Edje.h', 'Edje', 'edje', 'edje'],
+    [ 'Edje.h', 'Edje', 'edje', 'edje'],
     [ 'Ecore.h', 'Ecore', 'ecore', 'ecore'],
 #    [ 'Ecore_Con.h', 'EcoreCon', 'ecore_con', 'ecore'],
     [ 'Ecore_Input.h', 'EcoreInput', 'ecore', 'ecore'],
@@ -256,8 +253,7 @@ end.each do |lib, output, module_name, module_base, enums, typedefs, callbacks, 
     puts "generate #{output}"
     open(output,'w:utf-8') do |f|
         f << HEADER.sub(/MNAME/,module_name).sub(/MBASE/,module_base)
-	lib = "lib#{lib}.so" unless lib.start_with? 'lib'
-        f << "#{INDENT}#\n#{INDENT}ffi_lib '#{native_lib_path}/#{lib}'"
+        f << "#{INDENT}#\n#{INDENT}ffi_lib '#{lib}'"
         f << "\n#{INDENT}#\n#{INDENT}# ENUMS"
         f << "\n"+enums.collect { |t| ( t.is_a?(Array) ? ( TYPES_USAGE[t[0]] ? t[1] : nil ) : t ) }.compact.join("\n") unless enums.empty?
         f << "\n#{INDENT}#\n#{INDENT}# TYPEDEFS"
