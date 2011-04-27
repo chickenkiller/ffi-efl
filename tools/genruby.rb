@@ -2,7 +2,7 @@
 # -*- coding: UTF-8 -*-
 #
 path = File.dirname __FILE__
-lib_path = File.join path, '..', 'lib', 'efl'
+lib_path = File.join path, '..', 'lib', 'efl', 'ffi'
 #
 # header, module name, lfct prefix, lib
 libraries = [
@@ -33,11 +33,11 @@ module Efl
     #
     module MNAME
         def self.method_missing m, *args, &block
-            return Efl::API.send 'MBASE_'+m.to_s, *args, &block
+            return Efl::FFI.send 'MBASE_'+m.to_s, *args, &block
         end
     end
     #
-    module API
+    module FFI
         #
 EOF
 FOOTER =<<-EOF
@@ -237,11 +237,11 @@ def gen_functions path, indent
     r
 end
 #
+Dir.mkdir lib_path unless Dir.exists? lib_path
+#
 libraries.collect do |header,module_name,module_base,lib|
     base = File.join path, 'api', header
-    dir = File.join lib_path, header[0..-3].split('_').first.downcase
-    Dir.mkdir dir unless Dir.exists? dir
-    output = File.join dir, "#{header[0..-3].downcase}-ffi.rb"
+    output = File.join lib_path, "#{header[0..-3].downcase}.rb"
     puts "parse #{base}-*"
     r = [lib, output, module_name, module_base ]
     r << gen_enums(base, INDENT)
