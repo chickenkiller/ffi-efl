@@ -5,16 +5,16 @@ require 'efl/ffi'
 #
 module Efl
     #
-    module Ecore_evas
+    module EcoreEvas
         def self.method_missing m, *args, &block
-            return Efl::FFI.send 'ecore_'+m.to_s, *args, &block
+            return Efl::FFI.send 'ecore_evas_'+m.to_s, *args, &block
         end
     end
     #
     module FFI
         #
         #
-        ffi_lib 'ecore'
+        ffi_lib 'ecore_evas'
         #
         # ENUMS
         # typedef enum _Ecore_Evas_Engine_Type {...} Ecore_Evas_Engine_Type;

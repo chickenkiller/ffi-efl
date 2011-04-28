@@ -1494,9 +1494,9 @@ module Efl
         # FIXME
         # EAPI void elm_entry_text_filter_remove(Evas_Object *obj, void (*func) (void *data, Evas_Object *entry, char **text), void *data);
         # FIXME
-        # EAPI char *elm_entry_markup_to_utf8(const char *s) EINA_MALLOC EINA_WARN_UNUSED_RESULT;
+        # EAPI char *elm_entry_markup_to_utf8(const char *s);
         [ :elm_entry_markup_to_utf8, [ :string ], :string ],
-        # EAPI char *elm_entry_utf8_to_markup(const char *s) EINA_MALLOC EINA_WARN_UNUSED_RESULT;
+        # EAPI char *elm_entry_utf8_to_markup(const char *s);
         [ :elm_entry_utf8_to_markup, [ :string ], :string ],
         # EAPI void elm_entry_file_set(Evas_Object *obj, const char *file, Elm_Text_Format format);
         [ :elm_entry_file_set, [ :evas_object_p, :string, :elm_text_format ], :void ],
@@ -2628,6 +2628,10 @@ module Efl
         [ :elm_map_rotate_set, [ :evas_object_p, :double, :int, :int ], :void ],
         # EAPI void elm_map_rotate_get(const Evas_Object *obj, double *degree, Evas_Coord *cx, Evas_Coord *cy);
         [ :elm_map_rotate_get, [ :evas_object_p, :double_p, :int_p, :int_p ], :void ],
+        # EAPI void elm_map_wheel_disabled_set(Evas_Object *obj, Eina_Bool disabled);
+        [ :elm_map_wheel_disabled_set, [ :evas_object_p, :eina_bool ], :void ],
+        # EAPI Eina_Bool elm_map_wheel_disabled_get(const Evas_Object *obj);
+        [ :elm_map_wheel_disabled_get, [ :evas_object_p ], :eina_bool ],
         # EAPI Evas_Object *elm_panel_add(Evas_Object *parent);
         [ :elm_panel_add, [ :evas_object_p ], :evas_object_p ],
         # EAPI void elm_panel_orient_set(Evas_Object *obj, Elm_Panel_Orient orient);

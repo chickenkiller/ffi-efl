@@ -35,12 +35,18 @@ module Efl
         typedef :pointer, :void_p
         typedef :pointer, :string_array
         typedef :pointer, :string_array_p
+        typedef :uint_p,  :uintptr_t
         #
         typedef :pointer, :eina_list_p
+        typedef :pointer, :eina_hash_p
         typedef :pointer, :eina_iterator_p
         typedef :pointer, :eina_accessor_p
         typedef :pointer, :evas_p
         typedef :pointer, :evas_object_p
+        typedef :pointer, :evas_object_pp
+        typedef :pointer, :ecore_getopt_p
+        typedef :pointer, :ecore_getopt_desc_p
+        typedef :pointer, :ecore_getopt_value_p
         #
     end
     #
@@ -50,10 +56,19 @@ module Efl
             m.class_eval "def self.func_prefixes; @func_prefixes; end"
             m.class_eval "def self.inherited sub; sub.class_eval 'def self.func_prefixes; superclass.func_prefixes; end'; end"
         end
+        def === o
+            @ptr === o.ptr
+        end
+        def address
+            @ptr.address
+        end
         def method_missing m, *args, &block
             if m =~/^(.*)=$/
                 m_s = $1+'_set'
                 args_s = '*args[0]'
+            elsif m =~/^(.*)\?$/
+                m_s = $1+'_get'
+                args_s = '*args'
             else
                 m_s = m.to_s
                 args_s = '*args'
@@ -72,6 +87,6 @@ module Efl
     end
 end
 #
-require 'efl/ffi/eina_types'
+require 'efl/ffi/eina/eina_types'
 #
 # EOF
