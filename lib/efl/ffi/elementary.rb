@@ -6,13 +6,15 @@ require 'efl/ffi'
 module Efl
     #
     module Elm
-        def self.method_missing m, *args, &block
-            return Efl::FFI.send 'elm_'+m.to_s, *args, &block
-        end
-    end
-    #
-    module FFI
         #
+        extend Efl::FFIHelper
+        #
+        def self.method_missing m, *args, &block
+            sym = 'elm_'+m.to_s
+            raise NameError.new "#{self.name}.#{sym} (#{m})" if not self.respond_to? sym
+            self.module_eval "def self.#{m} *args, &block; r=self.#{sym}(*args); yield r if block_given?; r; end"
+            self.send sym, *args, &block
+        end
         #
         ffi_lib 'libelementary-ver-pre-svn-09.so.0'
         #
@@ -1160,8 +1162,8 @@ module Efl
         [ :elm_table_add, [ :evas_object_p ], :evas_object_p ],
         # EAPI void elm_table_homogenous_set(Evas_Object *obj, Eina_Bool homogenous);
         [ :elm_table_homogenous_set, [ :evas_object_p, :eina_bool ], :void ],
-        # EAPI Eina_Bool elm_table_homogeneous_get(const Evas_Object *obj);
-        [ :elm_table_homogeneous_get, [ :evas_object_p ], :eina_bool ],
+        # EAPI Eina_Bool elm_table_homogenous_get(const Evas_Object *obj);
+        [ :elm_table_homogenous_get, [ :evas_object_p ], :eina_bool ],
         # EAPI void elm_table_padding_set(Evas_Object *obj, Evas_Coord horizontal, Evas_Coord vertical);
         [ :elm_table_padding_set, [ :evas_object_p, :int, :int ], :void ],
         # EAPI void elm_table_padding_get(const Evas_Object *obj, Evas_Coord *horizontal, Evas_Coord *vertical);
@@ -3211,6 +3213,7 @@ module Efl
         ]
         #
         attach_fcts fcts
+        #
     end
 end
 #
