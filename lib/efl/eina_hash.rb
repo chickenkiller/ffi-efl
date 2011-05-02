@@ -20,29 +20,33 @@ module Efl
         class REinaHash
             include Enumerable
             include Efl::ClassHelper
-            @search_paths = [ [Efl::EinaHash,'eina_hash_'].freeze ]
+            proxy_list [Efl::EinaHash,'eina_hash_'].freeze
             def initialize o=nil, &block
                 cstr = ( block_given? ? block : Proc.new { Efl::EinaHash.eina_hash_string_djb2_new FFI::Pointer::NULL } )
                 @ptr = (
                     case o
-                    when FFI::Pointer
-                        ( o==FFI::Pointer::NULL ? cstr.call : o )
                     when NilClass
-                        cstr.call
+                        FFI::AutoPointer.new cstr.call, method(:free)
                     when self.class
-                        o.ptr
+                        o.to_ptr
+                    when FFI::AutoPointer
+                        o
+                    when FFI::Pointer
+                        FFI::AutoPointer.new ( o==FFI::Pointer::NULL ? cstr.call : o ), method(:free)
                     when Hash
                         ptr = cstr.call
                         o.each do |k,v| Efl::EinaHash.eina_hash_add ptr, k, v end
-                        ptr
+                        FFI::AutoPointer.new ptr, method(:free)
                     else
-                        raise ArgumentError.new "#{ptr.class} valid argument"
+                        raise ArgumentError.new "wrong argument #{o.class.name}"
                     end
                 )
             end
-            def free
-                return if @ptr==FFI::Pointer::NULL
-                @ptr = Efl::EinaHash.eina_hash_free @ptr
+            def free p=nil
+                return Efl::EinaHash.eina_hash_free p unless p.nil?
+                Efl::EinaHash.eina_hash_free @ptr
+                @ptr.free
+                @ptr = nil
             end
             def each data=FFI::Pointer::NULL, &block
                 return if not block_given?

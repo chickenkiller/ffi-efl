@@ -44,7 +44,7 @@ module Efl
         class REvas
             #
             include Efl::ClassHelper
-            @search_paths = [ [Efl::Evas,'evas_'].freeze ]
+            proxy_list [Efl::Evas,'evas_'].freeze
             #
             def initialize o=nil
                 @ptr = (
@@ -58,12 +58,13 @@ module Efl
                     when FFI::Pointer
                         FFI::AutoPointer.new o, method(:free)
                     else
-                        raise ArgumentError.new "#{o.class} valid argument"
+                        raise ArgumentError.new "wrong argument #{o.class.name}"
                     end
                 )
                 yield self if block_given?
             end
-            def free
+            def free p=nil
+                return Efl::Evas.evas_free p unless p.nil?
                 Efl::Evas.evas_free @ptr
                 @ptr=nil
             end
@@ -101,7 +102,7 @@ module Efl
         class REvasObject
             #
             include Efl::ClassHelper
-            @search_paths = [ [Efl::Evas,'evas_object_'].freeze, [Efl::Evas,'evas_'].freeze ]
+            proxy_list [Efl::Evas,'evas_object_'].freeze, [Efl::Evas,'evas_'].freeze
             #
             def initialize o=nil
                 @ptr = (
@@ -115,13 +116,15 @@ module Efl
                     when FFI::Pointer
                         FFI::AutoPointer.new o, method(:free)
                     else
-                        raise ArgumentError.new "#{o.class} valid argument"
+                        raise ArgumentError.new "wrong argument #{o.class.name}"
                     end
                 )
                 yield self if block_given?
             end
-            def free
+            def free p=nil
+                return Efl::Evas.evas_object_del p unless p.nil?
                 Efl::Evas.evas_object_del @ptr
+                @ptr.free
                 @ptr=nil
             end
             def geometry_get

@@ -10,7 +10,7 @@ class Array
         elsif o.is_a? FFI::Pointer
             Efl::EinaList::REinaList.new(o).to_ary
         else
-            raise ArgumentError.new " wrong argument #{o.class.name}"
+            raise ArgumentError.new "wrong argument #{o.class.name}"
         end
     end
 end
@@ -28,7 +28,7 @@ module Efl
         class REinaList
             include Enumerable
             include Efl::ClassHelper
-            @search_paths = [ [Efl::EinaList,'eina_list_'].freeze ]
+            proxy_list [Efl::EinaList,'eina_list_'].freeze
             def initialize o=nil
                 @ptr = (
                     case o
@@ -37,17 +37,18 @@ module Efl
                     when NilClass
                         FFI::Pointer::NULL
                     when self.class
-                        o.ptr
+                        o.to_ptr
                     when Array
                         o.inject(FFI::Pointer::NULL) { |p,e| Efl::EinaList.eina_list_append p, e }
                     else
-                        raise ArgumentError.new "#{ptr.class} valid argument"
+                        raise ArgumentError.new "wrong argument #{o.class.name}"
                     end
                 )
             end
-            def free
-                return if @ptr==FFI::Pointer::NULL
-                @ptr = Efl::EinaList.eina_list_free @ptr
+            def free p=nil
+                return Efl::EinaList.eina_list_free p unless p.nil?
+                Efl::EinaList.eina_list_free @ptr
+                @ptr = nil
             end
             def each
                 p = @ptr
