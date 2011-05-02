@@ -85,6 +85,7 @@ module Efl
             EOF
         end
         def method_missing m, *args, &block
+            m = m.to_s
             if m =~/^(.*)=$/
                 m_s = $1+'_set'
                 args_s = '*args[0]'

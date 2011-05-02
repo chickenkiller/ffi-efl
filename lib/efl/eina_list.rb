@@ -22,7 +22,7 @@ module Efl
                     :next,          :pointer,
                     :prev,          :pointer,
                     :accounting,    :pointer,
-                    :magic,         :uint,
+                    :magic,         :uint
         end
         #
         class REinaList
