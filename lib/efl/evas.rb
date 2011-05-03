@@ -50,26 +50,27 @@ module Efl
                 @ptr = (
                     case o
                     when NilClass
-                        FFI::AutoPointer.new Efl::Evas.evas_new, method(:free)
-                    when self.class
-                        o.to_ptr
-                    when FFI::AutoPointer
-                        o
+                        FFI::AutoPointer.new Efl::Evas.evas_new, REvas.method(:release)
                     when FFI::Pointer
-                        FFI::AutoPointer.new o, method(:free)
+                        o
                     else
                         raise ArgumentError.new "wrong argument #{o.class.name}"
                     end
                 )
                 yield self if block_given?
             end
-            def free p=nil
-                return Efl::Evas.evas_free p unless p.nil?
-                Efl::Evas.evas_free @ptr
+            def self.release p
+                Efl::Evas.evas_free p unless p.nil?
+            end
+            def free
+                @ptr.autorelease=false if @ptr.is_a? FFI::AutoPointer
+                REvas.release @ptr
                 @ptr=nil
             end
             def object_add t
-                Efl::Evas::REvasObject.new Efl::Evas.send "evas_object_#{t}_add", @ptr
+                r = Efl::Evas::REvasObject.new Efl::Evas.send "evas_object_#{t.to_s}_add", @ptr
+                yield r if block_given?
+                r
             end
             def output_size_get
                 x = FFI::MemoryPointer.new :int
@@ -108,23 +109,21 @@ module Efl
                 @ptr = (
                     case o
                     when NilClass
-                        FFI::AutoPointer.new Efl::Evas.evas_new, method(:free)
-                    when self.class
-                        o.to_ptr
-                    when FFI::AutoPointer
-                        o
+                        FFI::AutoPointer.new Efl::Evas.evas_new, REvasObject.method(:release)
                     when FFI::Pointer
-                        FFI::AutoPointer.new o, method(:free)
+                        o
                     else
                         raise ArgumentError.new "wrong argument #{o.class.name}"
                     end
                 )
                 yield self if block_given?
             end
-            def free p=nil
-                return Efl::Evas.evas_object_del p unless p.nil?
-                Efl::Evas.evas_object_del @ptr
-                @ptr.free
+            def self.release p
+                Efl::Evas.evas_object_del p unless p.nil?
+            end
+            def free
+                @ptr.autopointer=false if @ptr.is_a? FFI::AutoPointer
+                REvasObject.release @ptr
                 @ptr=nil
             end
             def geometry_get
@@ -132,17 +131,25 @@ module Efl
                 y = FFI::MemoryPointer.new :int
                 w = FFI::MemoryPointer.new :int
                 h = FFI::MemoryPointer.new :int
-                Efl::Evas.evas_object_geometry_get @evas, x, y, w, h
+                Efl::Evas.evas_object_geometry_get @ptr, x, y, w, h
                 [ x.read_int, y.read_int, w.read_int, h.read_int ]
+            end
+            alias :geometry :geometry_get
+            def size
+                geometry_get[2..-1]
+            end
+            def size= wh
+                Efl::Evas.evas_object_resize @ptr, *wh
             end
             def color_get
                 r = FFI::MemoryPointer.new :int
                 g = FFI::MemoryPointer.new :int
                 b = FFI::MemoryPointer.new :int
                 a = FFI::MemoryPointer.new :int
-                Efl::Evas.evas_object_color_get @evas, r, g, b, a
+                Efl::Evas.evas_object_color_get @ptr, r, g, b, a
                 [ r.read_int, g.read_int, b.read_int, a.read_int ]
             end
+            alias :color :color_get
         end
     end
 end
