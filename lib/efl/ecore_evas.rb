@@ -7,6 +7,13 @@ module Efl
     #
     module EcoreEvas
         #
+        def self.ecore_evas_list
+            Efl::EinaList::REinaList.new Efl::EcoreEvas.ecore_evas_ecore_evas_list_get
+        end
+        def self.engines_list
+            Efl::EinaList::REinaList.new Efl::EcoreEvas.engines_get
+        end
+        #
         class REcoreEvas
             include Efl::ClassHelper
             proxy_list [Efl::EcoreEvas,'ecore_evas_'].freeze
@@ -116,8 +123,6 @@ module Efl
             end
         end
     end
-    # TODO
-    #EAPI unsigned char ecore_getopt_callback_ecore_evas_list_engines(const Ecore_Getopt *parser, const Ecore_Getopt_Desc *desc, const char *str, void *data, Ecore_Getopt_Value *storage);
     #
 end
 #

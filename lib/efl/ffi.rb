@@ -85,15 +85,14 @@ module Efl
             EOF
         end
         def method_missing m, *args, &block
-            m = m.to_s
-            if m =~/^(.*)=$/
+            m_s = m.to_s
+            if m_s =~/^(.*)=$/
                 m_s = $1+'_set'
                 args_s = '*args[0]'
-            elsif m =~/^(.*)\?$/
+            elsif m_s =~/^(.*)\?$/
                 m_s = $1+'_get'
                 args_s = '*args'
             else
-                m_s = m.to_s
                 args_s = '*args'
             end
             self.class.proxy_list.each do |mod,p|
@@ -106,6 +105,7 @@ module Efl
                     return self.send m, *args, &block
                 end
             end
+            return [self.to_s+' ['+self.to_ptr.to_s+']'] if m_s=~/^to_ary$/
             Kernel.raise NameError.new "#{self.class.name} is unable to resolve #{m} within #{self.class.proxy_list.inspect}"
         end
     end

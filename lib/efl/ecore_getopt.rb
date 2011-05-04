@@ -110,7 +110,7 @@ module Efl
                 @ecore_getopt.to_ptr
             end
             def create
-                @ecore_getopt = Efl::EcoreGetopt::EcoreGetopt.new( ::FFI::MemoryPointer.new( (Efl::EcoreGetopt::EcoreGetopt.size+Efl::EcoreGetopt::Desc.size*@options.length), 1) )
+                @ecore_getopt = Efl::EcoreGetopt::EcoreGetopt.new( FFI::MemoryPointer.new( :uchar, Efl::EcoreGetopt::EcoreGetopt.size+Efl::EcoreGetopt::Desc.size*@options.length) )
                 [:prog,:usage,:version,:copyright,:license,:description].each do |sym|
                     @ecore_getopt[sym] = ( @desc.has_key?(sym) ? FFI::MemoryPointer.from_string(@desc[sym]) : FFI::Pointer::NULL )
                 end
