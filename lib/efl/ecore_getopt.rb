@@ -1,13 +1,13 @@
 #! /usr/bin/env ruby
 # -*- coding: UTF-8 -*-
 #
-require 'efl/ffi/ecore_getopt'
+require 'efl/native/ecore_getopt'
 #
 module Efl
     #
-    module EcoreGetopt
+    module Native
         #
-        class Value < FFI::Union
+        class EcoreGetoptValue < FFI::Union
             layout  :strp,          :pointer,
                     :boolp,         :eina_bool_p,
                     :shortp,        :short_p,
@@ -21,7 +21,7 @@ module Efl
                     :ptrp,          :void_p
         end
         #
-        class DescStoreDef < FFI::Union
+        class EcoreGetoptDescStoreDef < FFI::Union
             layout  :strv,          :pointer,
                     :boolv,         :uchar,
                     :shortv,        :short,
@@ -33,37 +33,37 @@ module Efl
                     :doublev,       :double
         end
         #
-        class DescStore < FFI::Struct
+        class EcoreGetoptDescStore < FFI::Struct
             layout  :type,          :ecore_getopt_type,                 # enum
                     :arg_req,       :ecore_getopt_desc_arg_requirement, # enum
-                    :def,           DescStoreDef
+                    :def,           EcoreGetoptDescStoreDef
         end
         #
         callback :ecore_getopt_desc_cb, [:ecore_getopt_p, :ecore_getopt_desc_p, :string, :pointer, :ecore_getopt_value_p ], :eina_bool
         #
-        class DescCallback < FFI::Struct
+        class EcoreGetoptDescCallback < FFI::Struct
             layout  :func,          :ecore_getopt_desc_cb,
                     :data,          :pointer,
                     :arg_req,       :ecore_getopt_desc_arg_requirement, # enum
                     :def,           :pointer
         end
         #
-        class ActionParam < FFI::Union
-            layout  :store,         DescStore,
+        class EcoreGetoptActionParam < FFI::Union
+            layout  :store,         EcoreGetoptDescStore,
                     :store_const,   :pointer,
                     :choices,       :pointer,
                     :append_type,   :ecore_getopt_type,                 # enum
-                    :callback,      DescCallback,
+                    :callback,      EcoreGetoptDescCallback,
                     :dummy,         :pointer
         end
         #
-        class Desc < FFI::Struct
+        class EcoreGetoptDesc < FFI::Struct
             layout  :shortname,     :char,
                     :longname,      :pointer,
                     :help,          :pointer,
                     :metavar,       :pointer,
                     :action,        :ecore_getopt_action,               # enum
-                    :action_param,  ActionParam
+                    :action_param,  EcoreGetoptActionParam
         end
         #
         class EcoreGetopt < FFI::Struct
@@ -74,12 +74,15 @@ module Efl
                     :license,       :pointer,
                     :description,   :pointer,
                     :strict,        :char
-#                    :descs,         :pointer,   # NULL terminated  EcoreGetopt_Desc[]
+#                        :descs,         :pointer,   # NULL terminated  EcoreGetopt_Desc[]
 
             def desc_ptr idx
-                Efl::EcoreGetopt::Desc.new to_ptr+Efl::EcoreGetopt::EcoreGetopt.size+(idx*Efl::EcoreGetopt::Desc.size)
+                Native::EcoreGetoptDesc.new to_ptr+Native::EcoreGetopt.size+(idx*Native::EcoreGetoptDesc.size)
             end
         end
+    end
+    #
+    module EcoreGetopt
         #
         class REcoreGetopt
             def initialize desc
@@ -110,7 +113,7 @@ module Efl
                 @ecore_getopt.to_ptr
             end
             def create
-                @ecore_getopt = Efl::EcoreGetopt::EcoreGetopt.new( FFI::MemoryPointer.new( :uchar, Efl::EcoreGetopt::EcoreGetopt.size+Efl::EcoreGetopt::Desc.size*@options.length) )
+                @ecore_getopt = Native::EcoreGetopt.new( FFI::MemoryPointer.new( :uchar, Native::EcoreGetopt.size+Native::EcoreGetoptDesc.size*@options.length) )
                 [:prog,:usage,:version,:copyright,:license,:description].each do |sym|
                     @ecore_getopt[sym] = ( @desc.has_key?(sym) ? FFI::MemoryPointer.from_string(@desc[sym]) : FFI::Pointer::NULL )
                 end
@@ -153,9 +156,9 @@ module Efl
                         d[:action_param][:dummy] = FFI::Pointer::NULL
                     end
                 end
-                @values_p = FFI::MemoryPointer.new Efl::EcoreGetopt::Value, @values.length, false
+                @values_p = FFI::MemoryPointer.new Native::EcoreGetoptValue, @values.length, false
                 @values.each_with_index do |v,i|
-                    Efl::EcoreGetopt::Value.new(@values_p+(i*Efl::EcoreGetopt::Value.size))[v[0]] = v[1]
+                    Native::EcoreGetoptValue.new(@values_p+(i*Native::EcoreGetoptValue.size))[v[0]] = v[1]
                 end
             end
             def parse argv
@@ -164,7 +167,7 @@ module Efl
                     ptr[i].put_pointer 0, p_from_string(s)
                 end
                 ptr[argv.length].put_pointer 0, FFI::Pointer::NULL
-                Efl::EcoreGetopt.ecore_getopt_parse @ecore_getopt, @values_p, argv.length, ptr
+                Native.ecore_getopt_parse @ecore_getopt, @values_p, argv.length, ptr
             end
             def store_full short, long, help, meta, type, arg_req, def_val
                 self << [ short, long, help, meta, :ecore_getopt_action_store, [:store, [type,arg_req, def_val] ] ]

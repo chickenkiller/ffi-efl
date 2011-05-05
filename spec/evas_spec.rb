@@ -1,11 +1,15 @@
 #! /usr/bin/env ruby
 # -*- coding: UTF-8 -*-
 #
+require 'efl/ecore'
 require 'efl/evas'
 #
 describe Efl::Evas do
     #
-    before(:all) { Evas = Efl::Evas }
+    before(:all) {
+        Evas = Efl::Evas
+        Native = Efl::Native
+    }
     #
     it "should init" do
         Evas.init.should == 1
@@ -20,15 +24,15 @@ describe Efl::Evas do
     end
     #
     it "evas alloc error enum is ok" do
-        Efl::Evas.enum_value(:evas_alloc_error_none).should == 0
-        Efl::Evas.enum_value(:evas_alloc_error_fatal).should == 1
-        Efl::Evas.enum_value(:evas_alloc_error_recovered).should == 2
-        Efl::Evas.enum_type(:evas_alloc_error)[0].should == :evas_alloc_error_none
-        Efl::Evas.enum_type(:evas_alloc_error)[1].should == :evas_alloc_error_fatal
-        Efl::Evas.enum_type(:evas_alloc_error)[2].should == :evas_alloc_error_recovered
-        Efl::Evas.enum_type(:evas_alloc_error)[:evas_alloc_error_none].should == 0
-        Efl::Evas.enum_type(:evas_alloc_error)[:evas_alloc_error_fatal].should == 1
-        Efl::Evas.enum_type(:evas_alloc_error)[:evas_alloc_error_recovered].should == 2
+        Native.enum_value(:evas_alloc_error_none).should == 0
+        Native.enum_value(:evas_alloc_error_fatal).should == 1
+        Native.enum_value(:evas_alloc_error_recovered).should == 2
+        Native.enum_type(:evas_alloc_error)[0].should == :evas_alloc_error_none
+        Native.enum_type(:evas_alloc_error)[1].should == :evas_alloc_error_fatal
+        Native.enum_type(:evas_alloc_error)[2].should == :evas_alloc_error_recovered
+        Native.enum_type(:evas_alloc_error)[:evas_alloc_error_none].should == 0
+        Native.enum_type(:evas_alloc_error)[:evas_alloc_error_fatal].should == 1
+        Native.enum_type(:evas_alloc_error)[:evas_alloc_error_recovered].should == 2
     end
     #
     it "should have no memory allocation error occured" do
@@ -62,7 +66,7 @@ describe Efl::Evas do
             @e.output_method_set Evas::render_method_lookup("buffer")
             @e.output_viewport_set 0, 0, @width, @height
             @e.output_size_set @width, @height
-            einfo = Efl::Evas::EngineInfoBufferStruct.new @e.engine_info_get
+            einfo = Native::EngineInfoBufferStruct.new @e.engine_info_get
             einfo[:info][:depth_type] = Efl::Evas::EVAS_ENGINE_BUFFER_DEPTH_ARGB32
             einfo[:info][:dest_buffer] = @pixels
             einfo[:info][:dest_buffer_row_bytes] = @width * FFI::type_size(:int);
@@ -89,7 +93,7 @@ describe Efl::Evas do
             e1.to_ptr.should be_nil
             e2.free
             e2.free
-            e4 = Evas::REvas.new Evas.evas_new
+            e4 = Evas::REvas.new Native.evas_new
             e4.address.should_not == 0
             e5 = e4.dup
             e4.address.should == e5.address
@@ -100,14 +104,14 @@ describe Efl::Evas do
         end
         #
         it "focus should work" do
-            Efl::Evas.evas_focus_in @e.to_ptr
-            Efl::Evas.evas_focus_state_get(@e.to_ptr).should be_true
-            Efl::Evas.evas_focus_out @e.to_ptr
-            Efl::Evas.evas_focus_state_get(@e.to_ptr).should be_false
-            Efl::Evas.focus_in @e.to_ptr
-            Efl::Evas.focus_state_get(@e.to_ptr).should be_true
-            Efl::Evas.focus_out @e.to_ptr
-            Efl::Evas.focus_state_get(@e.to_ptr).should be_false
+            Native.evas_focus_in @e.to_ptr
+            Native.evas_focus_state_get(@e.to_ptr).should be_true
+            Native.evas_focus_out @e.to_ptr
+            Native.evas_focus_state_get(@e.to_ptr).should be_false
+            Evas.focus_in @e.to_ptr
+            Evas.focus_state_get(@e.to_ptr).should be_true
+            Evas.focus_out @e.to_ptr
+            Evas.focus_state_get(@e.to_ptr).should be_false
             @e.focus_in { |r| r.should be_nil }
             @e.focus_state_get.should be_true
             @e.focus_state_get { |r| r.should be_true }
@@ -141,7 +145,7 @@ describe Efl::Evas do
         it "output method should work" do
             @e.output_method_get.should == Evas::render_method_lookup("buffer")
             # output_method_set tested in before(:all)
-            l = Efl::Evas::render_method_list
+            l = Efl::Evas.render_method_list
             Evas::render_method_list_free l
         end
         #
@@ -264,10 +268,10 @@ describe Efl::Evas do
             Evas.init
             @pixels = FFI::MemoryPointer.new :int, 100*100
             @e = Evas::REvas.new
-            @e.output_method_set Evas::render_method_lookup("buffer")
+            @e.output_method_set Evas.render_method_lookup("buffer")
             @e.output_viewport_set 0, 0, 100, 100
             @e.output_size_set 100, 100
-            einfo = Efl::Evas::EngineInfoBufferStruct.new @e.engine_info_get
+            einfo = Native::EngineInfoBufferStruct.new @e.engine_info_get
             einfo[:info][:depth_type] = Efl::Evas::EVAS_ENGINE_BUFFER_DEPTH_ARGB32
             einfo[:info][:dest_buffer] = @pixels
             einfo[:info][:dest_buffer_row_bytes] = 100 * FFI::type_size(:int);
@@ -276,11 +280,12 @@ describe Efl::Evas do
             einfo[:info][:func][:new_update_region] = nil #FFI::Pointer::NULL;
             einfo[:info][:func][:free_update_region] = nil #FFI::Pointer::NULL;
             @e.engine_info_set einfo
-            @o = @e.object_add :rectangle
-            @o.color = 200,200,200,200
-            @o.move 0, 0
-            @o.resize 100, 100
-            @o.show
+            @o = @e.object_add(:rectangle) { |o|
+                o.color = 200,200,200,200
+                o.move 0, 0
+                o.resize 100, 100
+                o.show
+            }
         end
         after(:all) do
             @e.free
@@ -340,6 +345,66 @@ describe Efl::Evas do
             @o.visible_get.should be_false
             @o.show
             @o.visible?.should be_true
+        end
+        #
+        it "color get/set should work" do
+            @o.color_get.should == [200,200,200,200]
+            @o.color_set 0,50,100,200
+            @o.color.should == [0,50,100,200]
+            @o.color = 200,200,200,200
+            @o.color.should == [200,200,200,200]
+        end
+        #
+        it "evas_get should worl" do
+            @o.evas_get.should === @e
+            @o.evas.should === @e
+        end
+        #
+        it "type_get should work" do
+            @o.type_get.should == 'rectangle'
+        end
+        # TODO raise, lower
+        it "raise, lower, stck_below, stack_above should work" do
+            os = []
+            0.upto(3) do
+                os << @e.object_add(:rectangle)
+            end
+            os[2].above.should === os[3]
+            os[2].below.should === os[1]
+            os[2].above_get.should === os[3]
+            os[2].below_get.should === os[1]
+            os[2].stack_below os[1]
+            os[2].above_get.should === os[1]
+            os[2].below_get.should === os[0]
+            os[2].stack_above os[1]
+            os[2].above_get.should === os[3]
+            os[2].below_get.should === os[1]
+            os.each do |o| o.free; end
+        end
+        #
+        it "event_callback should work" do
+            @o.move 0, 0 # FIXME why should I need this ?!?
+            count = 0
+            cb = Proc.new do |data,evas,evas_object,event_info|
+                count +=1
+            end
+            cb_data = FFI::MemoryPointer.from_string "my cb data"
+            @o.event_callback_add :evas_callback_mouse_in, cb, @o
+            Efl::Evas.event_feed_mouse_in @o.evas, Time.now.to_i, cb_data
+            sleep 0.1
+            count.should==1
+        end
+        #
+        it "pass event should work" do
+            @o.pass_events_get.should be_false
+            @o.pass_events_set true
+            @o.pass_events_get.should be_true
+            @o.pass_events=false
+            @o.pass_events_get.should be_false
+            @o.pass_events_set true
+            @o.pass_events_get.should be_true
+            @o.pass_events=false
+            @o.pass_events_get.should be_false
         end
     end
     #

@@ -1,23 +1,27 @@
 #! /usr/bin/env ruby
 # -*- coding: UTF-8 -*-
 #
-require 'efl/ffi/eina_list'
+require 'efl/native/eina_list'
 #
 module Efl
-    module EinaList
+    #
+    module Native
         #
         class EinaListStruct < FFI::Struct
             layout  :data,          :pointer,
-                    :next,          :pointer,
+                        :next,          :pointer,
                     :prev,          :pointer,
                     :accounting,    :pointer,
                     :magic,         :uint
         end
+    end
+    #
+    module EinaList
         #
         class REinaList
             include Enumerable
             include Efl::ClassHelper
-            proxy_list [Efl::EinaList,'eina_list_'].freeze
+            search_prefixes 'eina_list_'
             def initialize o=nil
                 @ptr = (
                     case o
@@ -26,21 +30,21 @@ module Efl
                     when NilClass
                         FFI::Pointer::NULL
                     when Array
-                        o.inject(FFI::Pointer::NULL) { |p,e| Efl::EinaList.eina_list_append p, e }
+                        o.inject(FFI::Pointer::NULL) { |p,e| Native.eina_list_append p, e }
                     else
                         raise ArgumentError.new "wrong argument #{o.class.name}"
                     end
                 )
             end
             def free
-                Efl::EinaList.eina_list_free @ptr
+                Native.eina_list_free @ptr
                 @ptr = nil
             end
             def each
                 return if not block_given?
                 p = @ptr
                 while p!=::FFI::Pointer::NULL
-                    l = Efl::EinaList::EinaListStruct.new p
+                    l = Native::EinaListStruct.new p
                     yield l[:data]
                     p = l[:next]
                 end
@@ -50,11 +54,11 @@ module Efl
             end
             # for fun and tests
             def append p
-                @ptr = Efl::EinaList.eina_list_append @ptr, p
+                @ptr = Native.eina_list_append @ptr, p
             end
             alias :<< :append
             def prepend p
-                @ptr = Efl::EinaList.eina_list_prepend @ptr, p
+                @ptr = Native.eina_list_prepend @ptr, p
             end
             alias :unshift :prepend
         end

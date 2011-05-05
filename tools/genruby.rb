@@ -2,7 +2,7 @@
 # -*- coding: UTF-8 -*-
 #
 path = File.dirname __FILE__
-lib_path = File.join path, '..', 'lib', 'efl', 'ffi'
+lib_path = File.join path, '..', 'lib', 'efl', 'native'
 #
 # header, module name, fct prefix, lib
 libraries = [
@@ -37,14 +37,18 @@ module Efl
     #
     module MNAME
         #
-        extend Efl::FFIHelper
-        #
         def self.method_missing m, *args, &block
             sym = 'FCT_PREFIX_'+m.to_s
-            raise NameError.new "\#{self.name}.\#{sym} (\#{m})" if not self.respond_to? sym
-            self.module_eval "def self.\#{m} *args, &block; r=self.\#{sym}(*args); yield r if block_given?; r; end"
-            self.send sym, *args, &block
+            raise NameError.new "\#{self.name}.\#{sym} (\#{m})" if not Efl::Native.respond_to? sym
+            self.module_eval "def self.\#{m} *args, &block; r=Efl::Native.\#{sym}(*args); yield r if block_given?; r; end"
+            self.send m, *args, &block
         end
+        #
+    end
+    #
+    module Native
+        #
+        extend Efl::FFIHelper
 EOF
 FOOTER =<<-EOF
     end
