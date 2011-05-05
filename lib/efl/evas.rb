@@ -72,9 +72,21 @@ module Efl
                 @ptr=nil
             end
             def object_add t
-                r = Evas::REvasObject.new Native.send "evas_object_#{t.to_s}_add", @ptr
-                yield r if block_given?
-                r
+                ts = t.to_s
+                o =  (
+                    case ts
+                    when 'rectangle'
+                        Evas::REvasRectangle.new Native.evas_object_rectangle_add @ptr
+                    when 'line'
+                        Evas::REvasLine.new Native.evas_object_line_add @ptr
+                    when 'polygon'
+                        Evas::REvasPolygon.new Native.evas_object_polygon_add @ptr
+                    else
+                        raise NameError.new "unknown or not implemented yet evas_object type #{ts}"
+                    end
+                )
+                yield o if block_given?
+                o
             end
             def output_size_get
                 x = FFI::MemoryPointer.new :int
@@ -82,6 +94,7 @@ module Efl
                 Native.evas_output_size_get @ptr, x, y
                 [ x.read_int, y.read_int ]
             end
+            alias :output_size :output_size_get
             alias :size :output_size_get
             def output_viewport_get
                 x = FFI::MemoryPointer.new :int
@@ -91,18 +104,22 @@ module Efl
                 Native.evas_output_viewport_get @ptr, x, y, w, h
                 [ x.read_int, y.read_int, w.read_int, h.read_int ]
             end
+            alias :output_viewport :output_viewport_get
+            alias :viewport :output_viewport_get
             def pointer_output_xy_get
                 x = FFI::MemoryPointer.new :int
                 y = FFI::MemoryPointer.new :int
                 Native.evas_pointer_output_xy_get @ptr, x, y
                 [ x.read_int, y.read_int ]
             end
+            alias :pointer_output :pointer_output_xy_get
             def pointer_canvas_xy_get
                 x = FFI::MemoryPointer.new :int
                 y = FFI::MemoryPointer.new :int
                 Native.evas_pointer_canvas_xy_get @ptr, x, y
                 [ x.read_int, y.read_int ]
             end
+            alias :pointer_canvas :pointer_canvas_xy_get
         end
         #
         class REvasObject
@@ -130,6 +147,12 @@ module Efl
                 @ptr.autopointer=false if @ptr.is_a? FFI::AutoPointer
                 REvasObject.release @ptr
                 @ptr=nil
+            end
+            def evas_name
+                Native.evas_object_name_get @ptr
+            end
+            def evas_type
+                Native.evas_object_type_get @ptr
             end
             def geometry_get
                 x = FFI::MemoryPointer.new :int
@@ -167,7 +190,89 @@ module Efl
                 REvasObject.new Native.evas_object_below_get @ptr
             end
             alias :below :below_get
+            def size_hint_min_get
+                w = FFI::MemoryPointer.new :int
+                h = FFI::MemoryPointer.new :int
+                Native.evas_object_size_hint_min_get @ptr, w, h
+                [ w.read_int, h.read_int ]
+            end
+            alias :size_hint_min :size_hint_min_get
+            def size_hint_max_get
+                w = FFI::MemoryPointer.new :int
+                h = FFI::MemoryPointer.new :int
+                Native.evas_object_size_hint_max_get @ptr, w, h
+                [ w.read_int, h.read_int ]
+            end
+            alias :size_hint_max :size_hint_max_get
+            def size_hint_request_get
+                w = FFI::MemoryPointer.new :int
+                h = FFI::MemoryPointer.new :int
+                Native.evas_object_size_hint_request_get @ptr, w, h
+                [ w.read_int, h.read_int ]
+            end
+            alias :size_hint_request :size_hint_request_get
+            def size_hint_aspect_get
+                a = FFI::MemoryPointer.new :int
+                w = FFI::MemoryPointer.new :int
+                h = FFI::MemoryPointer.new :int
+                Native.evas_object_size_hint_aspect_get @ptr, a, w, h
+                [ Native.enum_type(:evas_aspect_control)[a.read_int], w.read_int, h.read_int ]
+            end
+            alias :size_hint_aspect :size_hint_aspect_get
+            def size_hint_align_get
+                w = FFI::MemoryPointer.new :double
+                h = FFI::MemoryPointer.new :double
+                Native.evas_object_size_hint_align_get @ptr, w, h
+                [ w.read_double, h.read_double ]
+            end
+            alias :size_hint_align :size_hint_align_get
+            def size_hint_weight_get
+                w = FFI::MemoryPointer.new :double
+                h = FFI::MemoryPointer.new :double
+                Native.evas_object_size_hint_weight_get @ptr, w, h
+                [ w.read_double, h.read_double ]
+            end
+            alias :size_hint_weight :size_hint_weight_get
+            def size_hint_padding_get
+                l = FFI::MemoryPointer.new :int
+                r = FFI::MemoryPointer.new :int
+                t = FFI::MemoryPointer.new :int
+                b = FFI::MemoryPointer.new :int
+                Native.evas_object_size_hint_padding_get @ptr, l, r, t, b
+                [ l.read_int, r.read_int, t.read_int, b.read_int ]
+            end
+            alias :size_hint_padding :size_hint_padding_get
+            def data_get k
+                r = Native.evas_object_data_get @ptr, k
+                return nil if r==FFI::Pointer::NULL
+                r.read_string
+            end
+            alias :data :data_get
         end
+        #
+        class REvasRectangle < REvasObject
+        end
+        #
+        class REvasLine < REvasObject
+            #
+            search_prefixes 'evas_object_line_'
+            #
+            def line_xy_get
+                x1 = FFI::MemoryPointer.new :int
+                y1 = FFI::MemoryPointer.new :int
+                x2 = FFI::MemoryPointer.new :int
+                y2 = FFI::MemoryPointer.new :int
+                Native.evas_object_line_xy_get @ptr, x1, y1, x2, y2
+                [ x1.read_int, y1.read_int, x2.read_int, y2.read_int ]
+            end
+        end
+        #
+        class REvasPolygon < REvasObject
+            #
+            search_prefixes 'evas_object_polygon_'
+            #
+        end
+        #
     end
 end
 #
