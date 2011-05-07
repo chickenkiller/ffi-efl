@@ -1,22 +1,24 @@
 #! /usr/bin/env ruby
 # -*- coding: UTF-8 -*-
 #
+require 'efl/eina_list'
 require 'efl/ecore'
 require 'efl/evas'
 #
 describe Efl::Evas do
+    #
     def realize_evas
-        @width = 800
-        @height = 600
-        @pixels = FFI::MemoryPointer.new :int, @width*@height
+        width = 800
+        height = 600
+        @pixels = FFI::MemoryPointer.new :int, width*height
         @e = Evas::REvas.new
         @e.output_method_set Evas::render_method_lookup("buffer")
-        @e.output_viewport_set 0, 0, @width, @height
-        @e.output_size_set @width, @height
+        @e.output_viewport_set 0, 0, width, height
+        @e.output_size_set width, height
         einfo = Native::EngineInfoBufferStruct.new @e.engine_info
-        einfo[:info][:depth_type] = Efl::Evas::EVAS_ENGINE_BUFFER_DEPTH_ARGB32
+        einfo[:info][:depth_type] = Evas::EVAS_ENGINE_BUFFER_DEPTH_ARGB32
         einfo[:info][:dest_buffer] = @pixels
-        einfo[:info][:dest_buffer_row_bytes] = @width * FFI::type_size(:int);
+        einfo[:info][:dest_buffer_row_bytes] = width * FFI::type_size(:int);
         einfo[:info][:use_color_key] = 0;
         einfo[:info][:alpha_threshold] = 0;
         einfo[:info][:func][:new_update_region] = nil #FFI::Pointer::NULL;
@@ -84,6 +86,7 @@ describe Efl::Evas do
             @pixels.free
             Evas.shutdown
         end
+        #
         it "should be able to create and destroy evas" do
             e1 = Evas::REvas.new
             e1.address.should_not == 0
@@ -146,6 +149,7 @@ describe Efl::Evas do
             @e.render_idle_flush
             @e.render_dump
         end
+        #
         it "output method should work" do
             @e.output_method.should == Evas::render_method_lookup("buffer")
             @e.output_method_get.should == Evas::render_method_lookup("buffer")
@@ -167,6 +171,7 @@ describe Efl::Evas do
             @e.output_size = 666, 69
             @e.size == [666,69]
         end
+        #
         it "output viewport should work" do
             @e.output_viewport_set 0, 0, 666, 69
             @e.viewport.should == [0,0,666,69]
@@ -243,7 +248,7 @@ describe Efl::Evas do
                 true
             end
             kd_d = FFI::MemoryPointer.from_string "mouse_in"
-            @bg = Evas::REvasObject.new @e.object_rectangle_add
+            @bg = @e.object_rectangle_add
             @bg.move 0, 0
             @bg.resize 20, 20
             @bg.show
@@ -251,6 +256,7 @@ describe Efl::Evas do
             @e.event_feed_mouse_in Time.now.to_i, FFI::Pointer::NULL
             @bg.event_callback_del(:evas_callback_mouse_in, kd_cb).address.should == kd_d.address
             @db.should be_true
+            @bg.free
         end
         #
         it "image cache functions should work" do
@@ -285,7 +291,7 @@ describe Efl::Evas do
         it "focus should work" do
             @e.focus.should == FFI::Pointer::NULL
             @e.focus_get.should == FFI::Pointer::NULL
-            @o = @e.object_add(:rectangle) { |o|
+            @o = @e.object_rectangle_add { |o|
                 o.color = 200,200,200,200
                 o.move 0, 0
                 o.resize 100, 100
@@ -294,23 +300,26 @@ describe Efl::Evas do
             @o.focus = true
             @e.focus.should == @o.to_ptr
             @e.focus_get.should == @o.to_ptr
+            @o.free
         end
         #
         it "object_name_find should work" do
             @e.object_name_find("name").should == FFI::Pointer::NULL
-            @o = @e.object_add(:rectangle)
+            @o = @e.object_rectangle_add
             @o.name="name"
             @e.object_name_find("name").should == @o.to_ptr
+            @o.free
         end
         # TODO evas_object_top_at_xy_get, evas_object_top_at_pointer_get, evas_object_top_in_rectangle_get
         # TODO evas_objects_at_xy_get, evas_objects_in_rectangle_get, evas_object_bottom_get, evas_object_top_get
     end
+    #
     describe Efl::Evas::REvasObject do
         #
         before(:all) do
             Evas.init
             realize_evas
-            @o = @e.object_add(:rectangle) { |o|
+            @o = @e.object_rectangle_add { |o|
                 o.color = 200,200,200,200
                 o.move 0, 0
                 o.resize 100, 100
@@ -325,7 +334,7 @@ describe Efl::Evas do
         end
         #
         it "clipper should work" do
-            clipper = @e.object_add :rectangle
+            clipper = @e.object_rectangle_add
             clipper.color = 255,255,255,255
             clipper.move 25, 25
             clipper.resize 50, 50
@@ -369,6 +378,15 @@ describe Efl::Evas do
             @o.geometry_get.should == [10,10,50,50]
         end
         #
+        it "center should work" do
+            @o.geometry.should == [10,10,50,50]
+            @o.center_get.should == [35,35]
+            @o.center.should == [35,35]
+            @o.center_set 50, 50
+            @o.center.should == [50,50]
+            @o.geometry.should == [25,25,50,50]
+        end
+        #
         it "show hide visible should work" do
             @o.show
             @o.visible?.should be_true
@@ -401,7 +419,7 @@ describe Efl::Evas do
         it "raise, lower, stck_below, stack_above should work" do
             os = []
             0.upto(3) do
-                os << @e.object_add(:rectangle)
+                os << @e.object_rectangle_add
             end
             os[2].above.should === os[3]
             os[2].below.should === os[1]
@@ -565,9 +583,10 @@ describe Efl::Evas do
         before(:all) do
             Evas.init
             realize_evas
-            @l = @e.object_add 'line'
+            @l = @e.object_line_add
         end
         after(:all) do
+            @l.free
             @e.free
             Evas.shutdown
         end
@@ -582,22 +601,212 @@ describe Efl::Evas do
         before(:all) do
             Evas.init
             realize_evas
-            @p = @e.object_add 'polygon'
+            @p = @e.object_polygon_add
         end
         after(:all) do
+            @p.free
             @e.free
             Evas.shutdown
         end
         it "xy point_add should work" do
             @p.point_add 10, 20
             @p.point_add 30, 40
-            @p.point_add 50, 60
-            @p.point_add 80, 80
+            @p.<< 50, 60
+            @p.<< 80, 80
         end
         #
         it "point clear shold work" do
             @p.points_clear
         end
+    end
+    #
+    describe Efl::Evas::REvasText do
+        #
+        before(:all) do
+            Evas.init
+            realize_evas
+            @t = @e.object_text_add
+        end
+        after(:all) do
+            @t.free
+            @e.free
+            Evas.shutdown
+        end
+        #
+        it "font_source get/set should work" do
+            @t.font_source_set "myFont"
+            @t.font_source_get.should == "myFont"
+            @t.font_source = "myFont2"
+            @t.font_source.should == "myFont2"
+        end
+        #
+        it "font get/set should work" do
+            @t.font_set "Arial", 12
+            @t.font_get.should == ["Arial",12]
+            @t.font =  "Ariall", 16
+            @t.font_get.should == ["Ariall",16]
+        end
+        #
+        it "text set/get should work" do
+            @t.text_set "hello"
+            @t.text_get.should == "hello"
+            @t.text="hello world"
+            @t.text.should == "hello world"
+        end
+        #
+        it "test different accessors" do
+            @t.ascent_get.should > 0
+            @t.descent_get.should > 0
+            @t.max_ascent_get.should > 0
+            @t.max_descent_get.should > 0
+            @t.horiz_advance_get.should > 0
+            @t.vert_advance_get.should > 0
+            @t.inset_get.should > 0
+            @t.direction_get.should == :evas_bidi_direction_ltr
+            @t.style_pad_get.length.should == 4
+            @t.ascent.should > 0
+            @t.descent.should > 0
+            @t.max_ascent.should > 0
+            @t.max_descent.should > 0
+            @t.horiz_advance.should > 0
+            @t.vert_advance.should > 0
+            @t.inset.should > 0
+            @t.direction.should == :evas_bidi_direction_ltr
+            @t.style_pad.length.should == 4
+        end
+        #
+        it "bidi_delimiters set/get should work" do
+            @t.bidi_delimiters_set "@"
+            @t.bidi_delimiters_get.should == "@"
+            @t.bidi_delimiters= "#"
+            @t.bidi_delimiters.should == "#"
+        end
+        #
+        it "char_pos_get char_coords_get last_up_to_pos should work" do
+            @t.text="hello world"
+            coords = @t.char_pos_get 6
+            @t.char_coords(coords[0], coords[1])[0].should == 6
+            @t.char_coords_get(coords[0], coords[1])[0].should == 6
+            coords = @t.char_pos_get 3
+            @t.char_coords(coords[0], coords[1])[0].should == 3
+            @t.char_coords_get(coords[0], coords[1])[0].should == 3
+            @t.last_up_to_pos(coords[0], coords[1]).should == 3
+        end
+        #
+        it "style ste/get should work" do
+            @t.style_set :evas_text_style_shadow
+            @t.style_get.should == :evas_text_style_shadow
+            @t.style= :evas_text_style_outline
+            @t.style.should == :evas_text_style_outline
+        end
+        #
+        it "shadow_color set/get should work" do
+            @t.shadow_color_set 100, 150, 200, 50
+            @t.shadow_color_get.should == [100, 150, 200, 50]
+            @t.shadow_color = 100, 150, 200, 50
+            @t.shadow_color.should == [100, 150, 200, 50]
+        end
+        #
+        it "glow_color set/get should work" do
+            @t.glow_color_set 100, 150, 200, 50
+            @t.glow_color_get.should == [100, 150, 200, 50]
+            @t.glow_color = 100, 150, 200, 50
+            @t.glow_color.should == [100, 150, 200, 50]
+        end
+        #
+        it "glow2_color set/get should work" do
+            @t.glow2_color_set 100, 150, 200, 50
+            @t.glow2_color_get.should == [100, 150, 200, 50]
+            @t.glow2_color = 100, 150, 200, 50
+            @t.glow2_color.should == [100, 150, 200, 50]
+        end
+        #
+        it "outline_color set/get should work" do
+            @t.outline_color_set 100, 150, 200, 50
+            @t.outline_color_get.should == [100, 150, 200, 50]
+            @t.outline_color = 100, 150, 200, 50
+            @t.outline_color.should == [100, 150, 200, 50]
+        end
+        #
+    end
+    #
+    describe Efl::Evas::REvasBox do
+        #
+        before(:all) do
+            Evas.init
+            realize_evas
+            @b = @e.object_box_add
+            @os = []
+            0.upto(4) do
+                @os << @e.object_rectangle_add
+            end
+        end
+        after(:all) do
+            @b.free
+            @e.free
+            Evas.shutdown
+        end
+        #
+        it "append, prepend, insert_before, insert_after, insert_at, remove, remove_at, remove_all  and children_get should work" do
+            @b.append @os[4]
+            @b.prepend @os[0]
+            @b.insert_before @os[1], @os[4]
+            @b.insert_after @os[2], @os[1]
+            @b.insert_at @os[3], 3
+            @b.children_get.each_with_index do |o,i|
+                Evas::REvasRectangle.new(o).should === @os[i]
+            end
+            @os.delete_at 2
+            @b.remove_at(2).should be_true
+            @b.remove_at(20).should be_false
+            o = @os.delete_at 2
+            @b.remove(o).should be_true
+            @b.children_get.each_with_index do |o,i|
+                Evas::REvasRectangle.new(o).should === @os[i]
+            end
+            @b.remove_all true
+            @b.children.to_a.length.should == 0
+        end
+        #
+        it "align set/get should work" do
+            @b.align_set 0.2, 0.3
+            @b.align_get.should == [0.2,0.3]
+            @b.align = 0.3, 0.2
+            @b.align.should == [0.3,0.2]
+        end
+        #
+        it "padding set/get should work" do
+            @b.padding_set 20, 30
+            @b.padding_get.should == [20,30]
+            @b.padding = 30, 20
+            @b.padding.should == [30,20]
+        end
+        #
+
+        # EAPI void evas_object_box_smart_set (Evas_Object_Box_Api *api);
+        # EAPI const Evas_Object_Box_Api *evas_object_box_smart_class_get (void);
+        # EAPI void evas_object_box_layout_set (Evas_Object *o, Evas_Object_Box_Layout cb, const void *data, void (*free_data)(void *data));
+
+        # EAPI void evas_object_box_layout_horizontal (Evas_Object *o, Evas_Object_Box_Data *priv, void *data);
+        # EAPI void evas_object_box_layout_vertical (Evas_Object *o, Evas_Object_Box_Data *priv, void *data);
+        # EAPI void evas_object_box_layout_homogeneous_vertical (Evas_Object *o, Evas_Object_Box_Data *priv, void *data);
+        # EAPI void evas_object_box_layout_homogeneous_horizontal (Evas_Object *o, Evas_Object_Box_Data *priv, void *data);
+        # EAPI void evas_object_box_layout_homogeneous_max_size_horizontal(Evas_Object *o, Evas_Object_Box_Data *priv, void *data);
+        # EAPI void evas_object_box_layout_homogeneous_max_size_vertical (Evas_Object *o, Evas_Object_Box_Data *priv, void *data);
+        # EAPI void evas_object_box_layout_flow_horizontal (Evas_Object *o, Evas_Object_Box_Data *priv, void *data);
+        # EAPI void evas_object_box_layout_flow_vertical (Evas_Object *o, Evas_Object_Box_Data *priv, void *data);
+        # EAPI void evas_object_box_layout_stack (Evas_Object *o, Evas_Object_Box_Data *priv, void *data);
+
+        # EAPI Eina_Iterator *evas_object_box_iterator_new (const Evas_Object *o);
+        # EAPI Eina_Accessor *evas_object_box_accessor_new (const Evas_Object *o);
+
+        # EAPI const char *evas_object_box_option_property_name_get (Evas_Object *o, int property);
+
+        # EAPI int evas_object_box_option_property_id_get (Evas_Object *o, const char *name);
+        # EAPI Eina_Bool evas_object_box_option_property_set (Evas_Object *o, Evas_Object_Box_Option *opt, int property, ...);
+        # EAPI Eina_Bool evas_object_box_option_property_vset (Evas_Object *o, Evas_Object_Box_Option *opt, int property, va_list args);
+        # EAPI Eina_Bool evas_object_box_option_property_get (Evas_Object *o, Evas_Object_Box_Option *opt, int property, ...);
+        # EAPI Eina_Bool evas_object_box_option_property_vget (Evas_Object *o, Evas_Object_Box_Option *opt, int property, va_list args);
     end
     #
         # EAPI Evas_Object *evas_object_image_filled_add (Evas *e);
@@ -656,37 +865,6 @@ describe Efl::Evas do
         # EAPI Eina_Bool evas_object_image_source_set (Evas_Object *obj, Evas_Object *src);
         # EAPI Evas_Object *evas_object_image_source_get (Evas_Object *obj);
         # EAPI Eina_Bool evas_object_image_source_unset (Evas_Object *obj);
-        # EAPI Evas_Object *evas_object_text_add (Evas *e);
-        # EAPI void evas_object_text_font_source_set (Evas_Object *obj, const char *font);
-        # EAPI const char *evas_object_text_font_source_get (const Evas_Object *obj);
-        # EAPI void evas_object_text_font_set (Evas_Object *obj, const char *font, Evas_Font_Size size);
-        # EAPI void evas_object_text_font_get (const Evas_Object *obj, const char **font, Evas_Font_Size *size);
-        # EAPI void evas_object_text_text_set (Evas_Object *obj, const char *text);
-        # EAPI void evas_object_text_bidi_delimiters_set(Evas_Object *obj, const char *delim);
-        # EAPI const char *evas_object_text_bidi_delimiters_get(const Evas_Object *obj);
-        # EAPI const char *evas_object_text_text_get (const Evas_Object *obj);
-        # EAPI Evas_Coord evas_object_text_ascent_get (const Evas_Object *obj);
-        # EAPI Evas_Coord evas_object_text_descent_get (const Evas_Object *obj);
-        # EAPI Evas_Coord evas_object_text_max_ascent_get (const Evas_Object *obj);
-        # EAPI Evas_Coord evas_object_text_max_descent_get (const Evas_Object *obj);
-        # EAPI Evas_Coord evas_object_text_horiz_advance_get(const Evas_Object *obj);
-        # EAPI Evas_Coord evas_object_text_vert_advance_get (const Evas_Object *obj);
-        # EAPI Evas_Coord evas_object_text_inset_get (const Evas_Object *obj);
-        # EAPI Eina_Bool evas_object_text_char_pos_get (const Evas_Object *obj, int pos, Evas_Coord *cx, Evas_Coord *cy, Evas_Coord *cw, Evas_Coord *ch);
-        # EAPI int evas_object_text_char_coords_get (const Evas_Object *obj, Evas_Coord x, Evas_Coord y, Evas_Coord *cx, Evas_Coord *cy, Evas_Coord *cw, Evas_Coord *ch);
-        # EAPI int evas_object_text_last_up_to_pos (const Evas_Object *obj, Evas_Coord x, Evas_Coord y);
-        # EAPI Evas_Text_Style_Type evas_object_text_style_get (const Evas_Object *obj);
-        # EAPI void evas_object_text_style_set (Evas_Object *obj, Evas_Text_Style_Type type);
-        # EAPI void evas_object_text_shadow_color_set (Evas_Object *obj, int r, int g, int b, int a);
-        # EAPI void evas_object_text_shadow_color_get (const Evas_Object *obj, int *r, int *g, int *b, int *a);
-        # EAPI void evas_object_text_glow_color_set (Evas_Object *obj, int r, int g, int b, int a);
-        # EAPI void evas_object_text_glow_color_get (const Evas_Object *obj, int *r, int *g, int *b, int *a);
-        # EAPI void evas_object_text_glow2_color_set (Evas_Object *obj, int r, int g, int b, int a);
-        # EAPI void evas_object_text_glow2_color_get (const Evas_Object *obj, int *r, int *g, int *b, int *a);
-        # EAPI void evas_object_text_outline_color_set(Evas_Object *obj, int r, int g, int b, int a);
-        # EAPI void evas_object_text_outline_color_get(const Evas_Object *obj, int *r, int *g, int *b, int *a);
-        # EAPI void evas_object_text_style_pad_get (const Evas_Object *obj, int *l, int *r, int *t, int *b);
-        # EAPI Evas_BiDi_Direction evas_object_text_direction_get (const Evas_Object *obj);
         # EAPI Evas_Object *evas_object_textblock_add(Evas *e);
         # EAPI const char *evas_textblock_escape_string_get(const char *escape);
         # EAPI const char *evas_textblock_string_escape_get(const char *string, int *len_ret);
@@ -795,41 +973,6 @@ describe Efl::Evas do
         # EAPI void evas_object_smart_clipped_smart_set (Evas_Smart_Class *sc);
         # EAPI const Evas_Smart_Class *evas_object_smart_clipped_class_get (void);
         # EAPI void evas_object_smart_move_children_relative(Evas_Object *obj, Evas_Coord dx, Evas_Coord dy);
-        # EAPI void evas_object_box_smart_set (Evas_Object_Box_Api *api);
-        # EAPI const Evas_Object_Box_Api *evas_object_box_smart_class_get (void);
-        # EAPI void evas_object_box_layout_set (Evas_Object *o, Evas_Object_Box_Layout cb, const void *data, void (*free_data)(void *data));
-        # EAPI Evas_Object *evas_object_box_add (Evas *evas);
-        # EAPI Evas_Object *evas_object_box_add_to (Evas_Object *parent);
-        # EAPI void evas_object_box_layout_horizontal (Evas_Object *o, Evas_Object_Box_Data *priv, void *data);
-        # EAPI void evas_object_box_layout_vertical (Evas_Object *o, Evas_Object_Box_Data *priv, void *data);
-        # EAPI void evas_object_box_layout_homogeneous_vertical (Evas_Object *o, Evas_Object_Box_Data *priv, void *data);
-        # EAPI void evas_object_box_layout_homogeneous_horizontal (Evas_Object *o, Evas_Object_Box_Data *priv, void *data);
-        # EAPI void evas_object_box_layout_homogeneous_max_size_horizontal(Evas_Object *o, Evas_Object_Box_Data *priv, void *data);
-        # EAPI void evas_object_box_layout_homogeneous_max_size_vertical (Evas_Object *o, Evas_Object_Box_Data *priv, void *data);
-        # EAPI void evas_object_box_layout_flow_horizontal (Evas_Object *o, Evas_Object_Box_Data *priv, void *data);
-        # EAPI void evas_object_box_layout_flow_vertical (Evas_Object *o, Evas_Object_Box_Data *priv, void *data);
-        # EAPI void evas_object_box_layout_stack (Evas_Object *o, Evas_Object_Box_Data *priv, void *data);
-        # EAPI void evas_object_box_align_set (Evas_Object *o, double horizontal, double vertical);
-        # EAPI void evas_object_box_align_get (const Evas_Object *o, double *horizontal, double *vertical);
-        # EAPI void evas_object_box_padding_set (Evas_Object *o, Evas_Coord horizontal, Evas_Coord vertical);
-        # EAPI void evas_object_box_padding_get (const Evas_Object *o, Evas_Coord *horizontal, Evas_Coord *vertical);
-        # EAPI Evas_Object_Box_Option *evas_object_box_append (Evas_Object *o, Evas_Object *child);
-        # EAPI Evas_Object_Box_Option *evas_object_box_prepend (Evas_Object *o, Evas_Object *child);
-        # EAPI Evas_Object_Box_Option *evas_object_box_insert_before (Evas_Object *o, Evas_Object *child, const Evas_Object *reference);
-        # EAPI Evas_Object_Box_Option *evas_object_box_insert_after (Evas_Object *o, Evas_Object *child, const Evas_Object *referente);
-        # EAPI Evas_Object_Box_Option *evas_object_box_insert_at (Evas_Object *o, Evas_Object *child, unsigned int pos);
-        # EAPI Eina_Bool evas_object_box_remove (Evas_Object *o, Evas_Object *child);
-        # EAPI Eina_Bool evas_object_box_remove_at (Evas_Object *o, unsigned int pos);
-        # EAPI Eina_Bool evas_object_box_remove_all (Evas_Object *o, Eina_Bool clear);
-        # EAPI Eina_Iterator *evas_object_box_iterator_new (const Evas_Object *o);
-        # EAPI Eina_Accessor *evas_object_box_accessor_new (const Evas_Object *o);
-        # EAPI Eina_List *evas_object_box_children_get (const Evas_Object *o);
-        # EAPI const char *evas_object_box_option_property_name_get (Evas_Object *o, int property);
-        # EAPI int evas_object_box_option_property_id_get (Evas_Object *o, const char *name);
-        # EAPI Eina_Bool evas_object_box_option_property_set (Evas_Object *o, Evas_Object_Box_Option *opt, int property, ...);
-        # EAPI Eina_Bool evas_object_box_option_property_vset (Evas_Object *o, Evas_Object_Box_Option *opt, int property, va_list args);
-        # EAPI Eina_Bool evas_object_box_option_property_get (Evas_Object *o, Evas_Object_Box_Option *opt, int property, ...);
-        # EAPI Eina_Bool evas_object_box_option_property_vget (Evas_Object *o, Evas_Object_Box_Option *opt, int property, va_list args);
         # EAPI Evas_Object *evas_object_table_add (Evas *evas);
         # EAPI Evas_Object *evas_object_table_add_to (Evas_Object *parent);
         # EAPI void evas_object_table_homogeneous_set (Evas_Object *o, Evas_Object_Table_Homogeneous_Mode homogeneous);
