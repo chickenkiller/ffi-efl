@@ -19,35 +19,16 @@ end
 require 'efl/eina_list'
 require 'efl/evas'
 require 'efl/edje'
+require './spec/helper'
 #
 describe Efl::Edje do
     #
-    def realize_evas
-        width = 300
-        height = 200
-        @pixels = FFI::MemoryPointer.new :int, width*height
-        @e = Efl::Evas::REvas.new
-        @e.output_method_set Efl::Evas::render_method_lookup("buffer")
-        @e.output_viewport_set 0, 0, width, height
-        @e.output_size_set width, height
-        einfo = Efl::Native::EngineInfoBufferStruct.new @e.engine_info
-        einfo[:info][:depth_type] = Efl::Evas::EVAS_ENGINE_BUFFER_DEPTH_ARGB32
-        einfo[:info][:dest_buffer] = @pixels
-        einfo[:info][:dest_buffer_row_bytes] = width * FFI::type_size(:int);
-        einfo[:info][:use_color_key] = 0;
-        einfo[:info][:alpha_threshold] = 0;
-        einfo[:info][:func][:new_update_region] = nil #FFI::Pointer::NULL;
-        einfo[:info][:func][:free_update_region] = nil #FFI::Pointer::NULL;
-        @e.engine_info_set einfo
-    end
-    #
-    before(:all) { Edje = Efl::Edje }
-    #
-    before(:each) {
-        Edje.init
+    before(:all) {
+        Edje = Efl::Edje
+        Edje.init.should == 1
     }
-    after(:each) {
-        Edje.shutdown
+    after(:all) {
+        Edje.shutdown == 0
     }
     #
     it "should init" do
@@ -60,7 +41,7 @@ describe Efl::Edje do
         Edje.shutdown.should == 1
     end
     #
-    it "frametime get/set should work" do
+    it "frametime get/set " do
         Edje.frametime_set 10
         Edje.frametime_get.should == 10
     end
@@ -70,39 +51,39 @@ describe Efl::Edje do
         Edje.thaw
     end
     #
-    it "font_set_append should work" do
+    it "font_set_append " do
         Edje.fontset_append_set "my font"
         Edje.fontset_append_get.should == "my font"
     end
     #
-    it "scale get/set should work" do
+    it "scale get/set " do
         Edje.scale_set 0.3
         Edje.scale_get.should == 0.3
     end
     #
-    it "file_collection_list should work" do
+    it "file_collection_list " do
         l = Efl::EinaList::REinaList.new Edje.file_collection_list EDJE_FILE
         l.to_ary.length.should > 0
         Edje.file_collection_list_free l
     end
     #
-    it "file_group_exists should work" do
+    it "file_group_exists " do
         Edje.file_group_exists(EDJE_FILE, "my_group").should be_true
         Edje.file_group_exists(EDJE_FILE, "my_grup").should be_false
     end
     #
-    it "file_data_get should work" do
+    it "file_data_get " do
         Edje.file_data_get(EDJE_FILE, "key1").should == "val1"
         Edje.file_data_get(EDJE_FILE, "key2").should == nil
     end
     #
-    it "file_cache get/set should work" do
+    it "file_cache get/set " do
         Edje.file_cache_set 2
         Edje.file_cache_get.should == 2
         Edje.file_cache_flush
     end
     #
-    it "collection_cache get/set should work" do
+    it "collection_cache get/set " do
         Edje.collection_cache_set 6
         Edje.collection_cache_get.should == 6
         Edje.collection_cache_flush
@@ -114,7 +95,6 @@ describe Efl::Edje do
     describe Efl::Edje::REdje do
         before(:all) do
             Efl::Evas.init
-            Efl::Edje.init
             realize_evas
             @ed = @e.edje_object_add
             @ed.file_set EDJE_FILE, "my_group"
@@ -125,31 +105,25 @@ describe Efl::Edje do
         after(:all) do
             @e.free
             @pixels.free
-            Efl::Edje.shutdown
-            Efl::Evas.shutdown
+            Efl::Evas.shutdown.should==0
         end
         #
-        it "scale get/set should work" do
+        it "scale get/set " do
             @ed.scale_set 0.3
             @ed.scale_get.should == 0.3
         end
         #
-        it "mirrored get/set should work" do
-            @ed.mirrored_set true
-            @ed.mirrored_get.should be_true
-            @ed.mirrored = false
-            @ed.mirrored.should be_false
-            @ed.mirrored?.should be_false
-            @ed.mirrored_get.should be_false
+        it "mirrored get/set " do
+            bool_check @ed, 'mirrored'
         end
         #
-        it "data_get hould work" do
+        it "data_get" do
             @ed.data("key2").should == "val2"
             @ed.data_get("key2").should == "val2"
             @ed.data_get("key1").should == nil
         end
         #
-        it "file_get should work" do
+        it "file_get " do
             @ed.file_get[0].should == EDJE_FILE
             @ed.file_get[1].should == "my_group"
         end
