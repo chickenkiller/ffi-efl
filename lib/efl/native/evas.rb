@@ -7,10 +7,11 @@ module Efl
     #
     module Evas
         #
+        FCT_PREFIX = 'evas_'
+        #
         def self.method_missing m, *args, &block
-            sym = 'evas_'+m.to_s
-            raise NameError.new "#{self.name}.#{sym} (#{m})" if not Efl::Native.respond_to? sym
-            self.module_eval "def self.#{m} *args, &block; r=Efl::Native.#{sym}(*args); yield r if block_given?; r; end"
+            sym, args_s = ModuleHelper.find_function m, FCT_PREFIX
+            self.module_eval "def self.#{m} *args, &block; r=Efl::Native.#{sym}(#{args_s}); yield r if block_given?; r; end"
             self.send m, *args, &block
         end
         #
@@ -920,6 +921,8 @@ module Efl
         [ :evas_textblock_cursor_paragraph_next, [ :evas_textblock_cursor_p ], :eina_bool ],
         # EAPI Eina_Bool evas_textblock_cursor_paragraph_prev(Evas_Textblock_Cursor *cur);
         [ :evas_textblock_cursor_paragraph_prev, [ :evas_textblock_cursor_p ], :eina_bool ],
+        # EAPI const Eina_List *evas_textblock_node_format_list_get(const Evas_Object *obj, const char *anchor);
+        [ :evas_textblock_node_format_list_get, [ :evas_object_p, :string ], :eina_list_p ],
         # EAPI const Evas_Object_Textblock_Node_Format *evas_textblock_node_format_first_get(const Evas_Object *obj);
         [ :evas_textblock_node_format_first_get, [ :evas_object_p ], :evas_object_textblock_node_format_p ],
         # EAPI const Evas_Object_Textblock_Node_Format *evas_textblock_node_format_last_get(const Evas_Object *obj);
@@ -1042,6 +1045,8 @@ module Efl
         [ :evas_smart_callback_description_find, [ :evas_smart_p, :string ], :evas_smart_cb_description_p ],
         # EAPI Eina_Bool evas_smart_class_inherit_full (Evas_Smart_Class *sc, const Evas_Smart_Class *parent_sc, unsigned int parent_sc_size);
         [ :evas_smart_class_inherit_full, [ :evas_smart_class_p, :evas_smart_class_p, :uint ], :eina_bool ],
+        # EAPI int evas_smart_usage_get(const Evas_Smart *s);
+        [ :evas_smart_usage_get, [ :evas_smart_p ], :int ],
         # EAPI Evas_Object *evas_object_smart_add (Evas *e, Evas_Smart *s);
         [ :evas_object_smart_add, [ :evas_p, :evas_smart_p ], :evas_object_p ],
         # EAPI void evas_object_smart_member_add (Evas_Object *obj, Evas_Object *smart_obj);
@@ -1198,6 +1203,32 @@ module Efl
         [ :evas_object_table_children_get, [ :evas_object_p ], :eina_list_p ],
         # EAPI Evas_Object *evas_object_table_child_get (const Evas_Object *o, unsigned short col, unsigned short row);
         [ :evas_object_table_child_get, [ :evas_object_p, :ushort, :ushort ], :evas_object_p ],
+        # EAPI Evas_Object *evas_object_grid_add (Evas *evas);
+        [ :evas_object_grid_add, [ :evas_p ], :evas_object_p ],
+        # EAPI Evas_Object *evas_object_grid_add_to (Evas_Object *parent);
+        [ :evas_object_grid_add_to, [ :evas_object_p ], :evas_object_p ],
+        # EAPI void evas_object_grid_size_set (Evas_Object *o, int w, int h);
+        [ :evas_object_grid_size_set, [ :evas_object_p, :int, :int ], :void ],
+        # EAPI void evas_object_grid_size_get (const Evas_Object *o, int *w, int *h);
+        [ :evas_object_grid_size_get, [ :evas_object_p, :int_p, :int_p ], :void ],
+        # EAPI void evas_object_grid_mirrored_set (Evas_Object *o, Eina_Bool mirrored);
+        [ :evas_object_grid_mirrored_set, [ :evas_object_p, :eina_bool ], :void ],
+        # EAPI Eina_Bool evas_object_grid_mirrored_get (const Evas_Object *o);
+        [ :evas_object_grid_mirrored_get, [ :evas_object_p ], :eina_bool ],
+        # EAPI Eina_Bool evas_object_grid_pack (Evas_Object *o, Evas_Object *child, int x, int y, int w, int h);
+        [ :evas_object_grid_pack, [ :evas_object_p, :evas_object_p, :int, :int, :int, :int ], :eina_bool ],
+        # EAPI Eina_Bool evas_object_grid_unpack (Evas_Object *o, Evas_Object *child);
+        [ :evas_object_grid_unpack, [ :evas_object_p, :evas_object_p ], :eina_bool ],
+        # EAPI void evas_object_grid_clear (Evas_Object *o, Eina_Bool clear);
+        [ :evas_object_grid_clear, [ :evas_object_p, :eina_bool ], :void ],
+        # EAPI Eina_Bool evas_object_grid_pack_get (Evas_Object *o, Evas_Object *child, int *x, int *y, int *w, int *h);
+        [ :evas_object_grid_pack_get, [ :evas_object_p, :evas_object_p, :int_p, :int_p, :int_p, :int_p ], :eina_bool ],
+        # EAPI Eina_Iterator *evas_object_grid_iterator_new (const Evas_Object *o);
+        [ :evas_object_grid_iterator_new, [ :evas_object_p ], :eina_iterator_p ],
+        # EAPI Eina_Accessor *evas_object_grid_accessor_new (const Evas_Object *o);
+        [ :evas_object_grid_accessor_new, [ :evas_object_p ], :eina_accessor_p ],
+        # EAPI Eina_List *evas_object_grid_children_get (const Evas_Object *o);
+        [ :evas_object_grid_children_get, [ :evas_object_p ], :eina_list_p ],
         # EAPI Eina_Bool evas_object_filter_mode_set (Evas_Object *o, Evas_Filter_Mode mode);
         [ :evas_object_filter_mode_set, [ :evas_object_p, :evas_filter_mode ], :eina_bool ],
         # EAPI Evas_Filter_Mode evas_object_filter_mode_get (Evas_Object *o);

@@ -7,10 +7,11 @@ module Efl
     #
     module EinaLog
         #
+        FCT_PREFIX = 'eina_log_'
+        #
         def self.method_missing m, *args, &block
-            sym = 'eina_log_'+m.to_s
-            raise NameError.new "#{self.name}.#{sym} (#{m})" if not Efl::Native.respond_to? sym
-            self.module_eval "def self.#{m} *args, &block; r=Efl::Native.#{sym}(*args); yield r if block_given?; r; end"
+            sym, args_s = ModuleHelper.find_function m, FCT_PREFIX
+            self.module_eval "def self.#{m} *args, &block; r=Efl::Native.#{sym}(#{args_s}); yield r if block_given?; r; end"
             self.send m, *args, &block
         end
         #

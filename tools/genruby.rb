@@ -38,10 +38,11 @@ module Efl
     #
     module MNAME
         #
+        FCT_PREFIX = 'MY_FCT_PREFIX_'
+        #
         def self.method_missing m, *args, &block
-            sym = 'FCT_PREFIX_'+m.to_s
-            raise NameError.new "\#{self.name}.\#{sym} (\#{m})" if not Efl::Native.respond_to? sym
-            self.module_eval "def self.\#{m} *args, &block; r=Efl::Native.\#{sym}(*args); yield r if block_given?; r; end"
+            sym, args_s = ModuleHelper.find_function m, FCT_PREFIX
+            self.module_eval "def self.\#{m} *args, &block; r=Efl::Native.\#{sym}(\#{args_s}); yield r if block_given?; r; end"
             self.send m, *args, &block
         end
         #
@@ -282,7 +283,7 @@ libraries.collect do |header,module_name,fct_prefix,lib, output|
 end.each do |lib, output, module_name, fct_prefix, enums, typedefs, callbacks, variables, functions|
     printf "%-60s", "generate #{output}"
     open(output,'w:utf-8') do |f|
-        f << HEADER.gsub(/MNAME/,module_name).sub(/FCT_PREFIX/,fct_prefix)
+        f << HEADER.gsub(/MNAME/,module_name).sub(/MY_FCT_PREFIX/,fct_prefix)
         f << "#{INDENT}#\n#{INDENT}ffi_lib '#{lib}'"
         f << "\n#{INDENT}#\n#{INDENT}# ENUMS"
         print "enums, "

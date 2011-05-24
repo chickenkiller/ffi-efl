@@ -8,10 +8,11 @@ module Efl
     #
     module Elm
         #
+        FCT_PREFIX = 'elm_'
+        #
         def self.method_missing m, *args, &block
-            sym = 'elm_'+m.to_s
-            raise NameError.new "#{self.name}.#{sym} (#{m})" if not Efl::Native.respond_to? sym
-            self.module_eval "def self.#{m} *args, &block; r=Efl::Native.#{sym}(*args); yield r if block_given?; r; end"
+            sym, args_s = ModuleHelper.find_function m, FCT_PREFIX
+            self.module_eval "def self.#{m} *args, &block; r=Efl::Native.#{sym}(#{args_s}); yield r if block_given?; r; end"
             self.send m, *args, &block
         end
         #
@@ -207,6 +208,9 @@ module Efl
         # typedef struct _Elm_Map_Name Elm_Map_Name;
         typedef :pointer, :elm_map_name
         typedef :pointer, :elm_map_name_p
+        # typedef struct _Elm_Map_Track Elm_Map_Track;
+        typedef :pointer, :elm_map_track
+        typedef :pointer, :elm_map_track_p
         # typedef struct _Elm_Flipselector_Item Elm_Flipselector_Item;
         typedef :pointer, :elm_flipselector_item
         typedef :pointer, :elm_flipselector_item_p
@@ -913,6 +917,8 @@ module Efl
         [ :elm_image_editable_set, [ :evas_object_p, :eina_bool ], :void ],
         # EAPI Eina_Bool elm_image_editable_get(const Evas_Object *obj);
         [ :elm_image_editable_get, [ :evas_object_p ], :eina_bool ],
+        # EAPI Evas_Object *elm_image_object_get(const Evas_Object *obj);
+        [ :elm_image_object_get, [ :evas_object_p ], :evas_object_p ],
         # EAPI Evas_Object *elm_box_add(Evas_Object *parent);
         [ :elm_box_add, [ :evas_object_p ], :evas_object_p ],
         # EAPI void elm_box_horizontal_set(Evas_Object *obj, Eina_Bool horizontal);
@@ -2637,6 +2643,14 @@ module Efl
         [ :elm_map_wheel_disabled_set, [ :evas_object_p, :eina_bool ], :void ],
         # EAPI Eina_Bool elm_map_wheel_disabled_get(const Evas_Object *obj);
         [ :elm_map_wheel_disabled_get, [ :evas_object_p ], :eina_bool ],
+        # EAPI Elm_Map_Track *elm_map_track_add(Evas_Object *obj, const char *gpx_file);
+        [ :elm_map_track_add, [ :evas_object_p, :string ], :elm_map_track_p ],
+        # EAPI void elm_map_track_remove(Elm_Map_Track *track);
+        [ :elm_map_track_remove, [ :elm_map_track_p ], :void ],
+        # EAPI void elm_map_track_color_set(Elm_Map_Track *track, int r, int g , int b, int a);
+        [ :elm_map_track_color_set, [ :elm_map_track_p, :int, :int, :int, :int ], :void ],
+        # EAPI void elm_map_track_color_get(const Elm_Map_Track *track, int *r, int *g , int *b, int *a);
+        [ :elm_map_track_color_get, [ :elm_map_track_p, :int_p, :int_p, :int_p, :int_p ], :void ],
         # EAPI Evas_Object *elm_panel_add(Evas_Object *parent);
         [ :elm_panel_add, [ :evas_object_p ], :evas_object_p ],
         # EAPI void elm_panel_orient_set(Evas_Object *obj, Elm_Panel_Orient orient);
@@ -2827,6 +2841,8 @@ module Efl
         [ :elm_conformant_content_get, [ :evas_object_p ], :evas_object_p ],
         # EAPI Evas_Object *elm_conformant_content_unset(Evas_Object *obj);
         [ :elm_conformant_content_unset, [ :evas_object_p ], :evas_object_p ],
+        # EAPI Evas_Object *elm_conformant_content_area_get(const Evas_Object *obj);
+        [ :elm_conformant_content_area_get, [ :evas_object_p ], :evas_object_p ],
         # EAPI Evas_Object *elm_mapbuf_add(Evas_Object *parent);
         [ :elm_mapbuf_add, [ :evas_object_p ], :evas_object_p ],
         # EAPI void elm_mapbuf_content_set(Evas_Object *obj, Evas_Object *content);
@@ -3211,6 +3227,22 @@ module Efl
         [ :elm_segment_control_item_selected_get, [ :evas_object_p ], :elm_segment_item_p ],
         # EAPI void elm_segment_control_item_selected_set(Elm_Segment_Item *it, Eina_Bool select);
         [ :elm_segment_control_item_selected_set, [ :elm_segment_item_p, :eina_bool ], :void ],
+        # EAPI Evas_Object *elm_grid_add(Evas_Object *parent);
+        [ :elm_grid_add, [ :evas_object_p ], :evas_object_p ],
+        # EAPI void elm_grid_size_set(Evas_Object *obj, int w, int h);
+        [ :elm_grid_size_set, [ :evas_object_p, :int, :int ], :void ],
+        # EAPI void elm_grid_size_get(Evas_Object *obj, int *w, int *h);
+        [ :elm_grid_size_get, [ :evas_object_p, :int_p, :int_p ], :void ],
+        # EAPI void elm_grid_pack(Evas_Object *obj, Evas_Object *subobj, int x, int y, int w, int h);
+        [ :elm_grid_pack, [ :evas_object_p, :evas_object_p, :int, :int, :int, :int ], :void ],
+        # EAPI void elm_grid_unpack(Evas_Object *obj, Evas_Object *subobj);
+        [ :elm_grid_unpack, [ :evas_object_p, :evas_object_p ], :void ],
+        # EAPI void elm_grid_clear(Evas_Object *obj, Eina_Bool clear);
+        [ :elm_grid_clear, [ :evas_object_p, :eina_bool ], :void ],
+        # EAPI void elm_grid_pack_set(Evas_Object *subobj, int x, int y, int w, int h);
+        [ :elm_grid_pack_set, [ :evas_object_p, :int, :int, :int, :int ], :void ],
+        # EAPI void elm_grid_pack_get(Evas_Object *subobj, int *x, int *y, int *w, int *h);
+        [ :elm_grid_pack_get, [ :evas_object_p, :int_p, :int_p, :int_p, :int_p ], :void ],
         ]
         #
         attach_fcts fcts
