@@ -5,6 +5,21 @@ require 'efl/evas'
 require 'efl/native/elementary'
 #
 module Efl
+    #
+    module Native
+        #
+        class ElmGenlistItemClassStruct < FFI::Struct
+            layout  :item_style,        :pointer,
+                    :label_get,         :pointer,
+                    :icon_get,          :pointer,
+                    :state_get,         :pointer,
+                    :del,               :pointer,
+                    :moved,             :pointer,
+                    :mode_item_style,   :pointer,
+        end
+        #
+    end
+    #
     module Elm
         #
         def self.version
@@ -141,6 +156,16 @@ module Efl
             #
         end
         #
+        class ElmListItem < Efl::Evas::REvasObject
+            #
+            search_prefixes 'elm_list_item_', 'elm_object'
+            #
+            def data_get
+                Native::elm_list_item_data_get @ptr
+            end
+            alias :data :data_get
+        end
+        #
         class ElmIcon < Efl::Evas::REvasObject
             #
             include Helper
@@ -251,6 +276,30 @@ module Efl
         class ElmHoverselItem < Efl::Evas::REvasObject
             #
             search_prefixes 'elm_hoversel_item_', 'elm_object'
+            #
+        end
+        #
+        class ElmHover < Efl::Evas::REvasObject
+            #
+            include Helper
+            constructor :elm_hover_add
+            search_prefixes 'elm_hover_', 'elm_object'
+            #
+        end
+        #
+        class ElmButton < Efl::Evas::REvasObject
+            #
+            include Helper
+            constructor :elm_button_add
+            search_prefixes 'elm_button_', 'elm_object'
+            #
+        end
+        #
+        class ElmGenlist < Efl::Evas::REvasObject
+            #
+            include Helper
+            constructor :elm_genlist_add
+            search_prefixes 'elm_genlist_', 'elm_object'
             #
         end
         #
