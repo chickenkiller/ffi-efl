@@ -19,8 +19,6 @@ module Efl
     #
     module Native
         #
-        extend Efl::FFIHelper
-        #
         ffi_lib 'eina'
         #
         # ENUMS
@@ -46,6 +44,10 @@ module Efl
         [ :eina_threads_init, [  ], :int ],
         # EAPI int eina_threads_shutdown(void);
         [ :eina_threads_shutdown, [  ], :int ],
+        # EAPI Eina_Bool eina_main_loop_is(void);
+        [ :eina_main_loop_is, [  ], :eina_bool ],
+        # EAPI void eina_main_loop_define(void);
+        [ :eina_main_loop_define, [  ], :void ],
         ]
         #
         attach_fcts fcts

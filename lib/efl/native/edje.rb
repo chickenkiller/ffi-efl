@@ -19,8 +19,6 @@ module Efl
     #
     module Native
         #
-        extend Efl::FFIHelper
-        #
         ffi_lib 'edje'
         #
         # ENUMS
@@ -48,11 +46,13 @@ module Efl
         # typedef enum _Edje_Action_Type {...} Edje_Action_Type;
         enum :edje_action_type, [ :edje_action_type_none, 0, :edje_action_type_state_set, 1, :edje_action_type_action_stop, 2, :edje_action_type_signal_emit, 3,
             :edje_action_type_drag_val_set, 4, :edje_action_type_drag_val_step, 5, :edje_action_type_drag_val_page, 6, :edje_action_type_script, 7, :edje_action_type_focus_set, 8,
-            :edje_action_type_reserved00, 9, :edje_action_type_focus_object, 10, :edje_action_type_param_copy, 11, :edje_action_type_param_set, 12, :edje_action_type_last, 13 ]
+            :edje_action_type_reserved00, 9, :edje_action_type_focus_object, 10, :edje_action_type_param_copy, 11, :edje_action_type_param_set, 12, :edje_action_type_sound_sample,
+            13, :edje_action_type_sound_tone, 14, :edje_action_type_last, 15 ]
         # typedef enum _Edje_Tween_Mode {...} Edje_Tween_Mode;
         enum :edje_tween_mode, [ :edje_tween_mode_none, 0, :edje_tween_mode_linear, 1, :edje_tween_mode_sinusoidal, 2, :edje_tween_mode_accelerate, 3,
             :edje_tween_mode_decelerate, 4, :edje_tween_mode_accelerate_factor, 5, :edje_tween_mode_decelerate_factor, 6, :edje_tween_mode_sinusoidal_factor, 7,
-            :edje_tween_mode_divisor_interp, 8, :edje_tween_mode_bounce, 9, :edje_tween_mode_spring, 10, :edje_tween_mode_last, 11 ]
+            :edje_tween_mode_divisor_interp, 8, :edje_tween_mode_bounce, 9, :edje_tween_mode_spring, 10, :edje_tween_mode_last, 11,
+            :edje_tween_mode_mask, 0xff, :edje_tween_mode_opt_from_current, 0x1<<31]
         # typedef enum _Edje_Cursor {...} Edje_Cursor;
         enum :edje_cursor, [ :edje_cursor_main, :edje_cursor_selection_begin, :edje_cursor_selection_end, :edje_cursor_preedit_start, :edje_cursor_preedit_end,
             :edje_cursor_user, :edje_cursor_user_extra ]
@@ -64,6 +64,9 @@ module Efl
             :edje_load_error_unknown_collection, 8, :edje_load_error_recursive_reference, 9 ]
         # typedef enum _Edje_Text_Filter_Type {...} Edje_Text_Filter_Type;
         enum :edje_text_filter_type, [ :edje_text_filter_text, 0, :edje_text_filter_format, 1, :edje_text_filter_markup, 2 ]
+        # typedef enum _Edje_Text_Autocapital_Type {...} Edje_Text_Autocapital_Type;
+        enum :edje_text_autocapital_type, [ :edje_text_autocapital_type_none, :edje_text_autocapital_type_word, :edje_text_autocapital_type_sentence,
+            :edje_text_autocapital_type_allcharacter ]
         # typedef enum _Edje_External_Param_Type {...} Edje_External_Param_Type;
         enum :edje_external_param_type, [ :edje_external_param_type_int, :edje_external_param_type_double, :edje_external_param_type_string,
             :edje_external_param_type_bool, :edje_external_param_type_choice, :edje_external_param_type_max ]
@@ -71,11 +74,16 @@ module Efl
         enum :edje_external_param_flags, [ :edje_external_param_flags_none, 0, :edje_external_param_flags_get, :edje_external_param_flags_set,
             :edje_external_param_flags_state, :edje_external_param_flags_constructor, :edje_external_param_flags_regular, :edje_external_param_flags_set,
             :edje_external_param_flags_state ]
+        # typedef enum {...} Edje_Input_Panel_Layout;
+        enum :edje_input_panel_layout, [ :edje_input_panel_layout_normal, :edje_input_panel_layout_number, :edje_input_panel_layout_email, :edje_input_panel_layout_url,
+            :edje_input_panel_layout_phonenumber, :edje_input_panel_layout_ip, :edje_input_panel_layout_month, :edje_input_panel_layout_numberonly, :edje_input_panel_layout_invalid ]
         #
         # TYPEDEFS
         # typedef struct _Edje_Version Edje_Version;
         typedef :pointer, :edje_version
         typedef :pointer, :edje_version_p
+        # typedef struct _Edje_Entry_Change_Info Edje_Entry_Change_Info;
+        typedef :pointer, :edje_entry_change_info
         # typedef struct _Edje_Message_String Edje_Message_String;
         typedef :pointer, :edje_message_string
         # typedef struct _Edje_Message_Int Edje_Message_Int;
@@ -152,6 +160,10 @@ module Efl
         [ :edje_scale_set, [ :double ], :void ],
         # EAPI double edje_scale_get (void);
         [ :edje_scale_get, [  ], :double ],
+        # EAPI void edje_password_show_last_set(Eina_Bool password_show_last);
+        [ :edje_password_show_last_set, [ :eina_bool ], :void ],
+        # EAPI void edje_password_show_last_timeout_set(double password_show_last_timeout);
+        [ :edje_password_show_last_timeout_set, [ :double ], :void ],
         # EAPI Eina_Bool edje_object_scale_set (Evas_Object *obj, double scale);
         [ :edje_object_scale_set, [ :evas_object_p, :double ], :eina_bool ],
         # EAPI double edje_object_scale_get (const Evas_Object *obj);
@@ -224,6 +236,8 @@ module Efl
         [ :edje_object_signal_callback_del_full, [ :evas_object_p, :string, :string, :edje_signal_cb, :void_p ], :void_p ],
         # EAPI void edje_object_signal_emit (Evas_Object *obj, const char *emission, const char *source);
         [ :edje_object_signal_emit, [ :evas_object_p, :string, :string ], :void ],
+        # EAPI void * edje_object_signal_callback_extra_data_get(void);
+        [ :edje_object_signal_callback_extra_data_get, [  ], :void_p ],
         # EAPI void edje_object_play_set (Evas_Object *obj, Eina_Bool play);
         [ :edje_object_play_set, [ :evas_object_p, :eina_bool ], :void ],
         # EAPI Eina_Bool edje_object_play_get (const Evas_Object *obj);
@@ -333,6 +347,18 @@ module Efl
         [ :edje_object_part_text_cursor_pos_set, [ :evas_object_p, :string, :edje_cursor, :int ], :void ],
         # EAPI int edje_object_part_text_cursor_pos_get (const Evas_Object *obj, const char *part, Edje_Cursor cur);
         [ :edje_object_part_text_cursor_pos_get, [ :evas_object_p, :string, :edje_cursor ], :int ],
+        # EAPI void edje_object_part_text_input_panel_layout_set (const Evas_Object *obj, const char *part, Edje_Input_Panel_Layout layout);
+        [ :edje_object_part_text_input_panel_layout_set, [ :evas_object_p, :string, :edje_input_panel_layout ], :void ],
+        # EAPI Edje_Input_Panel_Layout edje_object_part_text_input_panel_layout_get (const Evas_Object *obj, const char *part);
+        [ :edje_object_part_text_input_panel_layout_get, [ :evas_object_p, :string ], :edje_input_panel_layout ],
+        # EAPI void edje_object_part_text_autocapital_type_set (const Evas_Object *obj, const char *part, Edje_Text_Autocapital_Type autocapital_type);
+        [ :edje_object_part_text_autocapital_type_set, [ :evas_object_p, :string, :edje_text_autocapital_type ], :void ],
+        # EAPI Edje_Text_Autocapital_Type edje_object_part_text_autocapital_type_get (const Evas_Object *obj, const char *part);
+        [ :edje_object_part_text_autocapital_type_get, [ :evas_object_p, :string ], :edje_text_autocapital_type ],
+        # EAPI void edje_object_part_text_input_panel_enabled_set (const Evas_Object *obj, const char *part, Eina_Bool enabled);
+        [ :edje_object_part_text_input_panel_enabled_set, [ :evas_object_p, :string, :eina_bool ], :void ],
+        # EAPI Eina_Bool edje_object_part_text_input_panel_enabled_get (const Evas_Object *obj, const char *part);
+        [ :edje_object_part_text_input_panel_enabled_get, [ :evas_object_p, :string ], :eina_bool ],
         # EAPI void edje_object_text_insert_filter_callback_add (Evas_Object *obj, const char *part, Edje_Text_Filter_Cb func, void *data);
         [ :edje_object_text_insert_filter_callback_add, [ :evas_object_p, :string, :edje_text_filter_cb, :void_p ], :void ],
         # EAPI void *edje_object_text_insert_filter_callback_del (Evas_Object *obj, const char *part, Edje_Text_Filter_Cb func);

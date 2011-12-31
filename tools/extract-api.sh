@@ -25,6 +25,7 @@ fi
 #
 for header in \
     "${INCLUDE}/eina-1/eina/eina_types.h" \
+    "${INCLUDE}/eina-1/eina/eina_xattr.h" \
     "${INCLUDE}/eina-1/eina/eina_main.h" \
     "${INCLUDE}/eina-1/eina/eina_log.h" \
     "${INCLUDE}/eina-1/eina/eina_list.h" \
@@ -40,6 +41,7 @@ for header in \
     "${INCLUDE}/ecore-1/Ecore_Evas.h" \
     "${INCLUDE}/ecore-1/Ecore_Fb.h" \
     "${INCLUDE}/ecore-1/Ecore_File.h" \
+    "${INCLUDE}/EMap.h" \
     "${INCLUDE}/elementary-0/Elementary.h" \
     ; do
     #

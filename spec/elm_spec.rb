@@ -6,15 +6,26 @@ require './spec/helper'
 #
 describe "Efl::Elm #{Efl::Elm.version.full}" do
     #
-    before(:all) {
+    before(:all) do
         Elm = Efl::Elm
-        Elm.init.should == 1
-    }
-    after(:all) {
-        Elm.shutdown.should == 0
-    }
+        @init = Elm.init
+    end
+    after(:all) do
+        Elm.shutdown
+    end
+    it "should init" do
+        Elm.init.should == @init+1
+        Elm.init.should == @init+2
+        Elm.init.should == @init+3
+    end
     #
-    describe Efl::Elm::ElmWin do
+    it "should shutdown" do
+        Elm.shutdown.should == @init+2
+        Elm.shutdown.should == @init+1
+        Elm.shutdown.should == @init
+    end
+    #
+    describe 'Efl::Elm::ElmWin' do
         before(:each) {
             realize_win
         }
@@ -168,7 +179,7 @@ describe "Efl::Elm #{Efl::Elm.version.full}" do
         # TODO EAPI void elm_win_illume_command_send(Evas_Object *obj, Elm_Illume_Command command, void *params);;
         # TODO EAPI Ecore_X_Window elm_win_xwindow_get(const Evas_Object *obj);
         #
-        describe Efl::Elm::ElmInWin do
+        describe 'Efl::Elm::ElmInWin' do
             it "activate, content set/get/unset" do
                 @iwin = @win.inwin_add
                 o1 = @win.evas.object_rectangle_add
@@ -176,15 +187,12 @@ describe "Efl::Elm #{Efl::Elm.version.full}" do
                 @iwin.activate
                 @iwin.content_set o1
                 @iwin.content.should == o1.to_ptr
-                @iwin.content?.should == o1.to_ptr
                 @iwin.content_get.should === o1.to_ptr
                 @iwin.content= o2
                 @iwin.content.should === o2.to_ptr
-                @iwin.content?.should === o2.to_ptr
                 @iwin.content_get.should === o2.to_ptr
                 @iwin.content_unset
                 @iwin.content.should == FFI::Pointer::NULL
-                @iwin.content?.should == FFI::Pointer::NULL
                 @iwin.content_get.should == FFI::Pointer::NULL
                 o1.free
                 o2.free
@@ -192,7 +200,7 @@ describe "Efl::Elm #{Efl::Elm.version.full}" do
         end
     end
     #
-    describe Efl::Elm::ElmBg do
+    describe 'Efl::Elm::ElmBg' do
         before(:all) {
             realize_win
         }
@@ -223,18 +231,9 @@ describe "Efl::Elm #{Efl::Elm.version.full}" do
             @bg.class.superclass.instance_method(:color).bind(@bg).call.should == [200,255,100,150]
         end
         #
-        it "overlay get/set unset" do
-            r = @win.evas.object_rectangle_add
-            @bg.overlay_get.should==FFI::Pointer::NULL
-            @bg.overlay_set r
-            @bg.overlay_get.should == r.to_ptr
-            @bg.overlay_unset.should == r.to_ptr
-            @bg.overlay_get.should == FFI::Pointer::NULL
-            r.free
-        end
     end
     #
-    describe Efl::Elm::ElmLabel do
+    describe 'Efl::Elm::ElmLabel' do
         #
         before(:all) {
             realize_win
@@ -245,13 +244,6 @@ describe "Efl::Elm #{Efl::Elm.version.full}" do
             @bg.free
             @win.free
         }
-        #
-        it "label set/get" do
-            @lb.label_set "label1"
-            @lb.label_get.should == "label1"
-            @lb.label= "label2"
-            @lb.label.should == "label2"
-        end
         #
         it "line_wrap set/get" do
             @lb.line_wrap_set :elm_wrap_char
@@ -291,7 +283,7 @@ describe "Efl::Elm #{Efl::Elm.version.full}" do
         end
     end
     #
-    describe Efl::Elm::ElmPager do
+    describe 'Efl::Elm::ElmPager' do
         #
         before(:all) {
             realize_win
@@ -322,7 +314,7 @@ describe "Efl::Elm #{Efl::Elm.version.full}" do
         end
     end
     #
-    describe Efl::Elm::ElmPanel do
+    describe 'Efl::Elm::ElmPanel' do
         #
         before(:all) {
             realize_win

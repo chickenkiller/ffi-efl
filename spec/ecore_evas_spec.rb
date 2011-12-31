@@ -5,7 +5,7 @@ require 'efl/eina_list'
 require 'efl/ecore_evas'
 require './spec/helper'
 #
-describe Efl::EcoreEvas do
+describe 'Efl::EcoreEvas' do
     #
     before(:all) do
         EcoreEvas = Efl::EcoreEvas
@@ -48,9 +48,9 @@ describe Efl::EcoreEvas do
     end
     #
     describe Efl::EcoreEvas::REcoreEvas do
-        before(:all) {
+        before(:all) do
             EcoreEvas.init.should == 2
-        }
+        end
         before(:each) do
             @e = EcoreEvas::REcoreEvas.new :engine_name=>"software_x11", :x=>10, :y=>10, :w=>100, :h=>120
             @canvas = @e.evas

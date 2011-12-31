@@ -4,15 +4,15 @@
 require 'efl/eina'
 require 'efl/eina_list'
 #
-describe Efl::EinaList do
+describe 'Efl::EinaList' do
     #
-    before(:all) {
+    before(:all) do
         REinaList = Efl::EinaList::REinaList
-        Efl::Eina.init.should == 1
-    }
-    after(:all) {
-        Efl::Eina.shutdown.should == 0
-    }
+        Efl::Eina.init
+    end
+    after(:all) do
+        Efl::Eina.shutdown
+    end
     #
     it "should append prepend and fetch" do
         l = REinaList.new

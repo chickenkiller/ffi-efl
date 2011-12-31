@@ -9,6 +9,7 @@ libraries = [
     # HEADER            MODUE NAME      FCT PREFIX      LIB             OUTPUT
     [ 'eina_types.h',   'Eina',         'eina',         'eina',         'eina_types.rb' ],
     [ 'eina_main.h',    'Eina',         'eina',         'eina',         'eina.rb' ],
+    [ 'eina_xattr.h',   'EinaXattr',    'eina_xattr',   'eina',         'eina_xattr.rb' ],
     [ 'eina_log.h',     'EinaLog',      'eina_log',     'eina',         'eina_log.rb' ],
     [ 'eina_list.h',    'EinaList',     'eina_list',    'eina',         'eina_list.rb' ],
     [ 'eina_hash.h',    'EinaHash',     'eina_hash',    'eina',         'eina_hash.rb' ],
@@ -23,6 +24,7 @@ libraries = [
     [ 'Ecore_Evas.h',   'EcoreEvas',    'ecore_evas',   'ecore_evas',   'ecore_evas.rb' ],
 #    [ 'Ecore_Fb.h',     'EcoreFb',      'ecore',        'ecore',        'ecore/ecore_fb.rb' ],
 #    [ 'Ecore_File.h',   'EcoreFile',    'ecore',        'ecore',        'ecore/ecore_file.rb' ],
+    [ 'EMap.h',         'EMap',         'emap',         'emap',         'emap.rb' ],
     [ 'Elementary.h',   'Elm',          'elm',          'libelementary-ver-pre-svn-09.so.0',    'elementary.rb' ],
 ]
 #
@@ -49,8 +51,6 @@ module Efl
     end
     #
     module Native
-        #
-        extend Efl::FFIHelper
 EOF
 FOOTER =<<-EOF
     end
@@ -67,7 +67,9 @@ TYPES = {
     'short' => ':short',
     'float' => ':float',
     'pid_t' => ':ulong',
+    'time_t' => ':ulong',
     'size_t' => ':ulong',
+    'ssize_t' => ':long',
     'double' => ':double',
     'long int' => ':long',
     'long long' => ':long_long',
@@ -80,6 +82,7 @@ TYPES = {
     'short *' => ':short_p',
     'float *' => ':float_p',
     'size_t *' => ':ulong_p',
+    'ssize_t *' => ':long_p',
     'double *' => ':double_p',
     'unsigned int *' => ':uint_p',
     'unsigned char *' => ':uchar_p',
@@ -96,6 +99,7 @@ TYPES = {
     # Efl BASE TYPES
     'Eina_Bool' => ':eina_bool',
     'Eina_Bool *' => ':eina_bool_p',
+    'Eina_Inlist *' => ':pointer',
     'Eina_Iterator' => ':eina_iterator',
     'Eina_Iterator *' => ':eina_iterator_p',
     'Eina_Accessor' => ':eina_accessor',
@@ -107,7 +111,7 @@ TYPES_USAGE = {}
 #
 def set_type t, v, cb=false
     return 'bool' if t =~/Eina_Bool/
-    v = v.downcase.gsub(/(const|enum|union)/,'').strip
+    v = v.downcase.sub(/(const|struct|enum|union) /,' ').strip
     if not TYPES[t].nil?
         puts "type already exists >#{t}< #{v}"
         exit 1

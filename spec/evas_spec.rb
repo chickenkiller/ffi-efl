@@ -8,23 +8,25 @@ require './spec/helper'
 #
 describe "Efl::Evas #{Efl::Evas.version.full}" do
     #
-    before(:all) {
+    before(:all) do
         Evas = Efl::Evas
         Native = Efl::Native unless Kernel.const_defined? 'Native'
-        Evas.init.should == 1
-    }
-    after(:all) {
+        @init = Evas.init
+    end
+    after(:all) do
         Evas.shutdown.should == 0
-    }
+    end
     #
     it "should init" do
-        Evas.init.should == 2
-        Evas.init.should == 3
+        Evas.init.should == @init+1
+        Evas.init.should == @init+2
+        Evas.init.should == @init+3
     end
     #
     it "should shutdown" do
-        Evas.shutdown.should == 2
-        Evas.shutdown.should == 1
+        Evas.shutdown.should == @init+2
+        Evas.shutdown.should == @init+1
+        Evas.shutdown.should == @init
     end
     #
     it "evas alloc error enum is ok" do
@@ -56,7 +58,7 @@ describe "Efl::Evas #{Efl::Evas.version.full}" do
         Evas.async_events_process.should == 0
     end
     #
-    describe Efl::Evas::REvas do
+    describe 'Efl::Evas::REvas' do
         before(:all) do
             realize_evas
         end
@@ -292,7 +294,7 @@ describe "Efl::Evas #{Efl::Evas.version.full}" do
         # TODO evas_objects_at_xy_get, evas_objects_in_rectangle_get, evas_object_bottom_get, evas_object_top_get
     end
     #
-    describe Efl::Evas::REvasObject do
+    describe 'Efl::Evas::REvasObject' do
         #
         before(:all) do
             realize_evas
@@ -554,7 +556,7 @@ describe "Efl::Evas #{Efl::Evas.version.full}" do
         #
     end
     #
-    describe Efl::Evas::REvasLine do
+    describe 'Efl::Evas::REvasLine' do
         #
         before(:all) do
             realize_evas
@@ -570,7 +572,7 @@ describe "Efl::Evas #{Efl::Evas.version.full}" do
         end
     end
     #
-    describe Efl::Evas::REvasPolygon do
+    describe 'Efl::Evas::REvasPolygon' do
         #
         before(:all) do
             realize_evas
@@ -592,7 +594,7 @@ describe "Efl::Evas #{Efl::Evas.version.full}" do
         end
     end
     #
-    describe Efl::Evas::REvasText do
+    describe 'Efl::Evas::REvasText' do
         #
         before(:all) do
             realize_evas
@@ -632,7 +634,7 @@ describe "Efl::Evas #{Efl::Evas.version.full}" do
             @t.horiz_advance_get.should > 0
             @t.vert_advance_get.should > 0
             @t.inset_get.should > 0
-            @t.direction_get.should == :evas_bidi_direction_ltr
+            @t.direction_get.should == :evas_bidi_direction_neutral
             @t.style_pad_get.length.should == 4
             @t.ascent.should > 0
             @t.descent.should > 0
@@ -641,7 +643,7 @@ describe "Efl::Evas #{Efl::Evas.version.full}" do
             @t.horiz_advance.should > 0
             @t.vert_advance.should > 0
             @t.inset.should > 0
-            @t.direction.should == :evas_bidi_direction_ltr
+            @t.direction.should == :evas_bidi_direction_neutral
             @t.style_pad.length.should == 4
         end
         #
@@ -700,7 +702,7 @@ describe "Efl::Evas #{Efl::Evas.version.full}" do
         #
     end
     #
-    describe Efl::Evas::REvasBox do
+    describe 'Efl::Evas::REvasBox' do
         #
         before(:all) do
             realize_evas

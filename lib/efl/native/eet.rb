@@ -2,6 +2,7 @@
 # -*- coding: UTF-8 -*-
 #
 require 'efl/ffi'
+require 'efl/native/eina_xattr'
 #
 module Efl
     #
@@ -18,8 +19,6 @@ module Efl
     end
     #
     module Native
-        #
-        extend Efl::FFIHelper
         #
         ffi_lib 'eet'
         #
@@ -69,57 +68,57 @@ module Efl
         callback :eet_key_password_callback, [ :string, :int, :int, :void_p ], :int
         # typedef int (*Eet_Descriptor_Hash_Foreach_Callback_Callback) (void *h, const char *k, void *dt, void *fdt);
         callback :eet_descriptor_hash_foreach_callback_callback, [ :void_p, :string, :void_p, :void_p ], :int
-        # typedef void *(*Eet_Descriptor_Mem_Alloc_Callback) (size_t size);
+        # typedef void * (*Eet_Descriptor_Mem_Alloc_Callback) (size_t size);
         callback :eet_descriptor_mem_alloc_callback, [ :ulong ], :void_p
         # typedef void (*Eet_Descriptor_Mem_Free_Callback) (void *mem);
         callback :eet_descriptor_mem_free_callback, [ :void_p ], :void
-        # typedef char *(*Eet_Descriptor_Str_Alloc_Callback) (const char *str);
+        # typedef char * (*Eet_Descriptor_Str_Alloc_Callback) (const char *str);
         callback :eet_descriptor_str_alloc_callback, [ :string ], :string
         # typedef void (*Eet_Descriptor_Str_Free_Callback) (const char *str);
         callback :eet_descriptor_str_free_callback, [ :string ], :void
-        # typedef void *(*Eet_Descriptor_List_Next_Callback) (void *l);
+        # typedef void * (*Eet_Descriptor_List_Next_Callback) (void *l);
         callback :eet_descriptor_list_next_callback, [ :void_p ], :void_p
-        # typedef void *(*Eet_Descriptor_List_Append_Callback) (void *l, void *d);
+        # typedef void * (*Eet_Descriptor_List_Append_Callback) (void *l, void *d);
         callback :eet_descriptor_list_append_callback, [ :void_p, :void_p ], :void_p
-        # typedef void *(*Eet_Descriptor_List_Data_Callback) (void *l);
+        # typedef void * (*Eet_Descriptor_List_Data_Callback) (void *l);
         callback :eet_descriptor_list_data_callback, [ :void_p ], :void_p
-        # typedef void *(*Eet_Descriptor_List_Free_Callback) (void *l);
+        # typedef void * (*Eet_Descriptor_List_Free_Callback) (void *l);
         callback :eet_descriptor_list_free_callback, [ :void_p ], :void_p
         # typedef void (*Eet_Descriptor_Hash_Foreach_Callback) (void *h, Eet_Descriptor_Hash_Foreach_Callback_Callback func, void *fdt);
         callback :eet_descriptor_hash_foreach_callback, [ :void_p, :eet_descriptor_hash_foreach_callback_callback, :void_p ], :void
-        # typedef void *(*Eet_Descriptor_Hash_Add_Callback) (void *h, const char *k, void *d);
+        # typedef void * (*Eet_Descriptor_Hash_Add_Callback) (void *h, const char *k, void *d);
         callback :eet_descriptor_hash_add_callback, [ :void_p, :string, :void_p ], :void_p
         # typedef void (*Eet_Descriptor_Hash_Free_Callback) (void *h);
         callback :eet_descriptor_hash_free_callback, [ :void_p ], :void
-        # typedef char *(*Eet_Descriptor_Str_Direct_Alloc_Callback) (const char *str);
+        # typedef char * (*Eet_Descriptor_Str_Direct_Alloc_Callback) (const char *str);
         callback :eet_descriptor_str_direct_alloc_callback, [ :string ], :string
         # typedef void (*Eet_Descriptor_Str_Direct_Free_Callback) (const char *str);
         callback :eet_descriptor_str_direct_free_callback, [ :string ], :void
-        # typedef const char *(*Eet_Descriptor_Type_Get_Callback) (const void *data, Eina_Bool *unknow);
+        # typedef const char * (*Eet_Descriptor_Type_Get_Callback) (const void *data, Eina_Bool *unknow);
         callback :eet_descriptor_type_get_callback, [ :void_p, :eina_bool_p ], :string
         # typedef Eina_Bool (*Eet_Descriptor_Type_Set_Callback) (const char *type, void *data, Eina_Bool unknow);
         callback :eet_descriptor_type_set_callback, [ :string, :void_p, :eina_bool ], :eina_bool
-        # typedef void *(*Eet_Descriptor_Array_Alloc_Callback) (size_t size);
+        # typedef void * (*Eet_Descriptor_Array_Alloc_Callback) (size_t size);
         callback :eet_descriptor_array_alloc_callback, [ :ulong ], :void_p
         # typedef void (*Eet_Descriptor_Array_Free_Callback) (void *mem);
         callback :eet_descriptor_array_free_callback, [ :void_p ], :void
         # typedef void (*Eet_Dump_Callback) (void *data, const char *str);
         callback :eet_dump_callback, [ :void_p, :string ], :void
-        # typedef void *(*Eet_Node_Walk_Struct_Alloc_Callback) (const char *type, void *user_data);
+        # typedef void * (*Eet_Node_Walk_Struct_Alloc_Callback) (const char *type, void *user_data);
         callback :eet_node_walk_struct_alloc_callback, [ :string, :void_p ], :void_p
         # typedef void (*Eet_Node_Walk_Struct_Add_Callback) (void *parent, const char *name, void *child, void *user_data);
         callback :eet_node_walk_struct_add_callback, [ :void_p, :string, :void_p, :void_p ], :void
-        # typedef void *(*Eet_Node_Walk_Array_Callback) (Eina_Bool variable, const char *name, int count, void *user_data);
+        # typedef void * (*Eet_Node_Walk_Array_Callback) (Eina_Bool variable, const char *name, int count, void *user_data);
         callback :eet_node_walk_array_callback, [ :eina_bool, :string, :int, :void_p ], :void_p
         # typedef void (*Eet_Node_Walk_Insert_Callback) (void *array, int index, void *child, void *user_data);
         callback :eet_node_walk_insert_callback, [ :void_p, :int, :void_p, :void_p ], :void
-        # typedef void *(*Eet_Node_Walk_List_Callback) (const char *name, void *user_data);
+        # typedef void * (*Eet_Node_Walk_List_Callback) (const char *name, void *user_data);
         callback :eet_node_walk_list_callback, [ :string, :void_p ], :void_p
         # typedef void (*Eet_Node_Walk_Append_Callback) (void *list, void *child, void *user_data);
         callback :eet_node_walk_append_callback, [ :void_p, :void_p, :void_p ], :void
-        # typedef void *(*Eet_Node_Walk_Hash_Callback) (void *parent, const char *name, const char *key, void *value, void *user_data);
+        # typedef void * (*Eet_Node_Walk_Hash_Callback) (void *parent, const char *name, const char *key, void *value, void *user_data);
         callback :eet_node_walk_hash_callback, [ :void_p, :string, :string, :void_p, :void_p ], :void_p
-        # typedef void *(*Eet_Node_Walk_Simple_Callback) (int type, Eet_Node_Data *data, void *user_data);
+        # typedef void * (*Eet_Node_Walk_Simple_Callback) (int type, Eet_Node_Data *data, void *user_data);
         callback :eet_node_walk_simple_callback, [ :int, :eet_node_data_p, :void_p ], :void_p
         # typedef Eina_Bool Eet_Read_Cb (const void *eet_data, size_t size, void *user_data);
         callback :eet_read_cb, [ :void_p, :ulong, :void_p ], :eina_bool
@@ -162,6 +161,10 @@ module Efl
         [ :eet_delete, [ :eet_file_p, :string ], :int ],
         # EAPI Eina_Bool eet_alias(Eet_File *ef, const char *name, const char *destination, int compress);
         [ :eet_alias, [ :eet_file_p, :string, :string, :int ], :eina_bool ],
+        # EAPI const char * eet_file_get(Eet_File *ef);
+        [ :eet_file_get, [ :eet_file_p ], :string ],
+        # EAPI const char * eet_alias_get(Eet_File *ef, const char *name);
+        [ :eet_alias_get, [ :eet_file_p, :string ], :string ],
         # EAPI char ** eet_list(Eet_File *ef, const char *glob, int *count_ret);
         [ :eet_list, [ :eet_file_p, :string, :int_p ], :string_array ],
         # EAPI int eet_num_entries(Eet_File *ef);
@@ -222,8 +225,8 @@ module Efl
         [ :eet_data_descriptor_stream_new, [ :eet_data_descriptor_class_p ], :eet_data_descriptor_p ],
         # EAPI Eet_Data_Descriptor * eet_data_descriptor_file_new(const Eet_Data_Descriptor_Class *eddc);
         [ :eet_data_descriptor_file_new, [ :eet_data_descriptor_class_p ], :eet_data_descriptor_p ],
-        # EAPI Eina_Bool eet_eina_stream_data_descriptor_class_set(Eet_Data_Descriptor_Class *eddc, unsigned int		 eddc_size, const char *name, int size);
-        # FIXME
+        # EAPI Eina_Bool eet_eina_stream_data_descriptor_class_set(Eet_Data_Descriptor_Class *eddc, unsigned int eddc_size, const char *name, int size);
+        [ :eet_eina_stream_data_descriptor_class_set, [ :eet_data_descriptor_class_p, :uint, :string, :int ], :eina_bool ],
         # EAPI Eina_Bool eet_eina_file_data_descriptor_class_set(Eet_Data_Descriptor_Class *eddc, unsigned int eddc_size, const char *name, int size);
         [ :eet_eina_file_data_descriptor_class_set, [ :eet_data_descriptor_class_p, :uint, :string, :int ], :eina_bool ],
         # EAPI void eet_data_descriptor_free(Eet_Data_Descriptor *edd);
@@ -248,8 +251,12 @@ module Efl
         [ :eet_data_descriptor_encode, [ :eet_data_descriptor_p, :void_p, :int_p ], :void_p ],
         # EAPI void * eet_data_read_cipher(Eet_File *ef, Eet_Data_Descriptor *edd, const char *name, const char *cipher_key);
         [ :eet_data_read_cipher, [ :eet_file_p, :eet_data_descriptor_p, :string, :string ], :void_p ],
+        # EAPI void * eet_data_xattr_cipher_get(const char *filename, const char *attribute, Eet_Data_Descriptor *edd, const char *cipher_key);
+        [ :eet_data_xattr_cipher_get, [ :string, :string, :eet_data_descriptor_p, :string ], :void_p ],
         # EAPI int eet_data_write_cipher(Eet_File *ef, Eet_Data_Descriptor *edd, const char *name, const char *cipher_key, const void *data, int compress);
         [ :eet_data_write_cipher, [ :eet_file_p, :eet_data_descriptor_p, :string, :string, :void_p, :int ], :int ],
+        # EAPI Eina_Bool eet_data_xattr_cipher_set(const char *filename, const char *attribute, Eet_Data_Descriptor *edd, const char *cipher_key, const void *data, Eina_Xattr_Flags flags);
+        [ :eet_data_xattr_cipher_set, [ :string, :string, :eet_data_descriptor_p, :string, :void_p, :eina_xattr_flags ], :eina_bool ],
         # EAPI int eet_data_text_dump_cipher(const void *data_in, const char *cipher_key, int size_in, Eet_Dump_Callback dumpfunc, void *dumpdata);
         [ :eet_data_text_dump_cipher, [ :void_p, :string, :int, :eet_dump_callback, :void_p ], :int ],
         # EAPI void * eet_data_text_undump_cipher(const char *text, const char *cipher_key, int textlen, int *size_ret);
@@ -300,6 +307,12 @@ module Efl
         [ :eet_node_struct_new, [ :string, :eina_list_p ], :eet_node_p ],
         # EAPI Eet_Node * eet_node_struct_child_new(const char *parent, Eet_Node *child);
         [ :eet_node_struct_child_new, [ :string, :eet_node_p ], :eet_node_p ],
+        # EAPI Eet_Node * eet_node_children_get(Eet_Node *node);
+        [ :eet_node_children_get, [ :eet_node_p ], :eet_node_p ],
+        # EAPI Eet_Node * eet_node_next_get(Eet_Node *node);
+        [ :eet_node_next_get, [ :eet_node_p ], :eet_node_p ],
+        # EAPI Eet_Node * eet_node_parent_get(Eet_Node *node);
+        [ :eet_node_parent_get, [ :eet_node_p ], :eet_node_p ],
         # EAPI void eet_node_list_append(Eet_Node *parent, const char *name, Eet_Node *child);
         [ :eet_node_list_append, [ :eet_node_p, :string, :eet_node_p ], :void ],
         # EAPI void eet_node_struct_append(Eet_Node *parent, const char *name, Eet_Node *child);
@@ -308,6 +321,10 @@ module Efl
         [ :eet_node_hash_add, [ :eet_node_p, :string, :string, :eet_node_p ], :void ],
         # EAPI void eet_node_dump(Eet_Node *n, int dumplevel, Eet_Dump_Callback dumpfunc, void *dumpdata);
         [ :eet_node_dump, [ :eet_node_p, :int, :eet_dump_callback, :void_p ], :void ],
+        # EAPI int eet_node_type_get(Eet_Node *node);
+        [ :eet_node_type_get, [ :eet_node_p ], :int ],
+        # EAPI Eet_Node_Data * eet_node_value_get(Eet_Node *node);
+        [ :eet_node_value_get, [ :eet_node_p ], :eet_node_data_p ],
         # EAPI void eet_node_del(Eet_Node *n);
         [ :eet_node_del, [ :eet_node_p ], :void ],
         # EAPI void * eet_data_node_encode_cipher(Eet_Node *node, const char *cipher_key, int *size_ret);
