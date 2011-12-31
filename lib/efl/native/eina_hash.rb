@@ -7,10 +7,11 @@ module Efl
     #
     module EinaHash
         #
+        FCT_PREFIX = 'eina_hash_'
+        #
         def self.method_missing m, *args, &block
-            sym = 'eina_hash_'+m.to_s
-            raise NameError.new "#{self.name}.#{sym} (#{m})" if not Efl::Native.respond_to? sym
-            self.module_eval "def self.#{m} *args, &block; r=Efl::Native.#{sym}(*args); yield r if block_given?; r; end"
+            sym, args_s = ModuleHelper.find_function m, FCT_PREFIX
+            self.module_eval "def self.#{m} *args, &block; r=Efl::Native.#{sym}(#{args_s}); yield r if block_given?; r; end"
             self.send m, *args, &block
         end
         #
@@ -47,6 +48,8 @@ module Efl
         fcts = [
         # EAPI Eina_Hash *eina_hash_new(Eina_Key_Length key_length_cb, Eina_Key_Cmp key_cmp_cb, Eina_Key_Hash key_hash_cb, Eina_Free_Cb data_free_cb, int buckets_power_size);
         [ :eina_hash_new, [ :eina_key_length, :eina_key_cmp, :eina_key_hash, :eina_free_cb, :int ], :eina_hash_p ],
+        # EAPI void eina_hash_free_cb_set(Eina_Hash *hash, Eina_Free_Cb data_free_cb);
+        [ :eina_hash_free_cb_set, [ :eina_hash_p, :eina_free_cb ], :void ],
         # EAPI Eina_Hash *eina_hash_string_djb2_new(Eina_Free_Cb data_free_cb);
         [ :eina_hash_string_djb2_new, [ :eina_free_cb ], :eina_hash_p ],
         # EAPI Eina_Hash *eina_hash_string_superfast_new(Eina_Free_Cb data_free_cb);

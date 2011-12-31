@@ -7,10 +7,11 @@ module Efl
     #
     module EcoreEvas
         #
+        FCT_PREFIX = 'ecore_evas_'
+        #
         def self.method_missing m, *args, &block
-            sym = 'ecore_evas_'+m.to_s
-            raise NameError.new "#{self.name}.#{sym} (#{m})" if not Efl::Native.respond_to? sym
-            self.module_eval "def self.#{m} *args, &block; r=Efl::Native.#{sym}(*args); yield r if block_given?; r; end"
+            sym, args_s = ModuleHelper.find_function m, FCT_PREFIX
+            self.module_eval "def self.#{m} *args, &block; r=Efl::Native.#{sym}(#{args_s}); yield r if block_given?; r; end"
             self.send m, *args, &block
         end
         #
@@ -347,6 +348,8 @@ module Efl
         [ :ecore_evas_comp_sync_get, [ :ecore_evas_p ], :eina_bool ],
         # EAPI Ecore_Window ecore_evas_window_get(const Ecore_Evas *ee);
         [ :ecore_evas_window_get, [ :ecore_evas_p ], :uintptr_t ],
+        # EAPI void ecore_evas_screen_geometry_get(const Ecore_Evas *ee, int *x, int *y, int *w, int *h);
+        [ :ecore_evas_screen_geometry_get, [ :ecore_evas_p, :int_p, :int_p, :int_p, :int_p ], :void ],
         # EAPI Eina_Bool ecore_evas_object_associate(Ecore_Evas *ee, Evas_Object *obj, Ecore_Evas_Object_Associate_Flags flags);
         [ :ecore_evas_object_associate, [ :ecore_evas_p, :evas_object_p, :ecore_evas_object_associate_flags ], :eina_bool ],
         # EAPI Eina_Bool ecore_evas_object_dissociate(Ecore_Evas *ee, Evas_Object *obj);
